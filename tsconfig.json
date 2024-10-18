@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "sourceMap": true,
+    "target": "ES6",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "lib": ["ESNext", "DOM"],
+    "types": ["@types/node"],
+    "strict": true,
+    "esModuleInterop": true
+  },
+  "include": [
+    "src/**/*.ts",      // Behalte den src-Ordner bei
+    "tests/**/*.ts"     // Füge den tests-Ordner hinzu
+  ],
+  "exclude": ["node_modules"]
+}
