@@ -5,10 +5,10 @@ module.exports = {
     entry: {
         background: './src/background.ts',
         content: './src/content.ts',
-        popup: './src/popup.ts'  // Nur falls du popup.ts wirklich verwendest
+        popup: './src/popup.ts'  // Nur falls  popup.ts wirklich verwendet wird
     },
     output: {
-        path: path.resolve(__dirname, 'dist'),  // Dies stellt sicher, dass alle Dateien in "dist/" landen
+        path: path.resolve(__dirname, 'dist'),  // alle Dateien in "dist/"
         filename: '[name].js'
     },
     resolve: {
@@ -26,11 +26,14 @@ module.exports = {
     plugins: [
         new CopyWebpackPlugin({
             patterns: [
-                { from: 'src/manifest.json', to: '.' },  // Kopiert manifest.json direkt in "dist/"
+                { from: 'src/manifest.json', to: '.' },
+                { from: 'src/icons', to: 'icons' }
+                // Kopiert manifest.json direkt in "dist/"
                 // Falls popup.html vorhanden ist:
                 // { from: 'src/popup.html', to: '.' },
             ]
         })
     ],
-    mode: 'development'
+    mode: 'development',
+    devtool: 'source-map'  // kein  eval() in den generierten Dateien
 };
