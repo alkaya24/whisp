@@ -27,10 +27,10 @@ module.exports = {
         new CopyWebpackPlugin({
             patterns: [
                 { from: 'src/manifest.json', to: '.' },
-                { from: 'src/icons', to: 'icons' }
+                { from: 'src/icons', to: 'icons' },
                 // Kopiert manifest.json direkt in "dist/"
                 // Falls popup.html vorhanden ist:
-                // { from: 'src/popup.html', to: '.' },
+                { from: 'src/popup.html', to: '.' }
             ]
         })
     ],
