@@ -14,5 +14,5 @@
     "src/**/*.ts",      // Behalte den src-Ordner bei
     "tests/**/*.ts"     // Füge den tests-Ordner hinzu
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist"]
 }

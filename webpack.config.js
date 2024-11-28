@@ -3,9 +3,9 @@ const path = require('path');
 
 module.exports = {
     entry: {
-        background: './src/background.ts',
-        content: './src/content.ts',
-        popup: './src/popup.ts'  // Nur falls  popup.ts wirklich verwendet wird
+        //background: './src/background.ts',
+        content: './src/content/index.ts',
+        popup: './src/popup/popup.ts'  // Nur falls  popup.ts wirklich verwendet wird
     },
     output: {
         path: path.resolve(__dirname, 'dist'),  // alle Dateien in "dist/"
@@ -26,11 +26,11 @@ module.exports = {
     plugins: [
         new CopyWebpackPlugin({
             patterns: [
+                // Kopiert manifest.json direkt in "dist/"
                 { from: 'src/manifest.json', to: '.' },
                 { from: 'src/icons', to: 'icons' },
-                // Kopiert manifest.json direkt in "dist/"
                 // Falls popup.html vorhanden ist:
-                { from: 'src/popup.html', to: '.' }
+                { from: 'src/popup/popup.html', to: '.' }
             ]
         })
     ],
