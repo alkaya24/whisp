@@ -3,8 +3,8 @@ import { fieldRules } from './fieldRulesStore';
 
 export function openFieldConfigurator(field: HTMLInputElement) {
     const configDiv = document.createElement('div');
-    configDiv.style.position = 'fixed';
-    configDiv.style.top = '20%';
+    configDiv.style.position = 'absolute';
+    configDiv.style.top = '35%';
     configDiv.style.left = '50%';
     configDiv.style.transform = 'translate(-50%, -50%)';
     configDiv.style.backgroundColor = 'white';
@@ -60,9 +60,7 @@ export function openFieldConfigurator(field: HTMLInputElement) {
     const tabValues = configDiv.querySelector('#tab-values') as HTMLElement;
     const minMaxTab = configDiv.querySelector('#min-max-tab') as HTMLElement;
     const valuesTab = configDiv.querySelector('#values-tab') as HTMLElement;
-    const validMessageToggle = configDiv.querySelector('#valid-message-toggle') as HTMLInputElement;
     const validMessageInput = configDiv.querySelector('#valid-message') as HTMLInputElement;
-    const invalidMessageToggle = configDiv.querySelector('#invalid-message-toggle') as HTMLInputElement;
     const invalidMessageInput = configDiv.querySelector('#invalid-message') as HTMLInputElement;
 
     tabMinMax.addEventListener('click', () => {
@@ -75,8 +73,6 @@ export function openFieldConfigurator(field: HTMLInputElement) {
         valuesTab.style.display = 'block';
     });
 
-
-
     configDiv.querySelector('#save-config')?.addEventListener('click', () => {
         const fieldType = (configDiv.querySelector('#field-type') as HTMLSelectElement).value;
         const validValues = (configDiv.querySelector('#valid-values') as HTMLInputElement).value.split(',').map(v => v.trim()).filter(v => v);
@@ -85,12 +81,12 @@ export function openFieldConfigurator(field: HTMLInputElement) {
         const invalidMessage = invalidMessageInput.value;
 
         if (fieldType === 'number') {
-            const min = parseFloat((configDiv.querySelector('#min-value') as HTMLInputElement).value);
-            const max = parseFloat((configDiv.querySelector('#max-value') as HTMLInputElement).value);
+            const min = parseFloat((configDiv.querySelector('#min-value') as HTMLInputElement).value.trim());
+            const max = parseFloat((configDiv.querySelector('#max-value') as HTMLInputElement).value.trim());
             fieldRules.set(field, { type: 'number', min, max, validValues, invalidValues, validMessage, invalidMessage });
         } else if (fieldType === 'string') {
-            const minLength = parseInt((configDiv.querySelector('#min-length') as HTMLInputElement).value, 10);
-            const maxLength = parseInt((configDiv.querySelector('#max-length') as HTMLInputElement).value, 10);
+            const minLength = parseFloat((configDiv.querySelector('#min-value') as HTMLInputElement).value.trim());
+            const maxLength = parseFloat((configDiv.querySelector('#max-value') as HTMLInputElement).value.trim());
             fieldRules.set(field, { type: 'string', min: minLength, max: maxLength, validValues, invalidValues, validMessage, invalidMessage });
         }
 
