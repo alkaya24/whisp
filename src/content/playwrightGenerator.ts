@@ -19,19 +19,37 @@ test('Validiere Feld ${fieldId} für Zahlen innerhalb des zulässigen Bereichs',
 
         if (rules.min !== undefined) {
             testCode += `
-    // Teste zufällige Zahlen in der Nähe des Minimums
-    const nearMin = ${rules.min} + 1;
-    await field.fill(nearMin.toString());
-    await expect(field).toHaveValue(nearMin.toString());
+    // Teste Zahlen in der Nähe des Minimums
+    const minNumber = ${rules.min};
+    const minNumberAddOne = minNumber+1;
+    const minNumberSubtractOne = minNumber-1
+    
+    await field.fill(minNumber.toString());
+    await expect(field).toHaveValue(minNumber.toString());
+    
+    await field.fill(minNumberAddOne.toString());
+    await expect(field).toHaveValue(minNumberAddOne.toString());
+    
+    await field.fill(minNumberSubtractOne.toString());
+    await expect(field).toHaveValue(minNumberSubtractOne.toString());
 `;
         }
 
         if (rules.max !== undefined) {
             testCode += `
-    // Teste zufällige Zahlen in der Nähe des Maximums
-    const nearMax = ${rules.max} - 1;
+    // Teste Zahlen in der Nähe des Maximums
+    const nearMax = ${rules.max};
+    const nearMaxAddOne = nearMax + 1;
+    const nearMaxSubtractOne = nearMax - 1;
+    
     await field.fill(nearMax.toString());
     await expect(field).toHaveValue(nearMax.toString());
+    
+    await field.fill(nearMaxAddOne.toString());
+    await expect(field).toHaveValue(nearMaxAddOne.toString());
+    
+    await field.fill(nearMaxSubtractOne.toString());
+    await expect(field).toHaveValue(nearMaxSubtractOne.toString());
 `;
         }
 
@@ -53,18 +71,36 @@ test('Validiere Feld ${fieldId} für Textlängen innerhalb des zulässigen Berei
         if (rules.min !== undefined) {
             testCode += `
     // Teste zufällige Texte in der Nähe der minimalen Länge
-    const nearMinLength = 'a'.repeat(${rules.min} + 1);
-    await field.fill(nearMinLength);
-    await expect(field).toHaveValue(nearMinLength);
+    const minLength = 'a'.repeat(${rules.min});
+    const minLengthAddOne = 'a'.repeat(${rules.min} + 1);
+    const minLengthSubtractOne = 'a'.repeat(${rules.min} - 1);
+    
+    await field.fill(minLength);
+    await expect(field).toHaveValue(minLength);
+    
+    await field.fill(minLengthAddOne.toString());
+    await expect(field).toHaveValue(minLengthAddOne.toString());
+    
+    await field.fill(minLengthSubtractOne.toString());
+    await expect(field).toHaveValue(minLengthSubtractOne.toString());
 `;
         }
 
         if (rules.max !== undefined) {
             testCode += `
     // Teste zufällige Texte in der Nähe der maximalen Länge
-    const nearMaxLength = 'a'.repeat(${rules.max} - 1);
-    await field.fill(nearMaxLength);
-    await expect(field).toHaveValue(nearMaxLength);
+    const maxLength = 'a'.repeat(${rules.max});
+    const maxLengthAddOne = 'a'.repeat(${rules.max} + 1);
+    const maxLengthSubtractOne = 'a'.repeat(${rules.max} - 1);
+    
+    await field.fill(maxLength);
+    await expect(field).toHaveValue(maxLength);
+    
+    await field.fill(maxLengthAddOne.toString());
+    await expect(field).toHaveValue(maxLengthAddOne.toString());
+    
+    await field.fill(maxLengthSubtractOne.toString());
+    await expect(field).toHaveValue(maxLengthSubtractOne.toString());
 `;
         }
 
