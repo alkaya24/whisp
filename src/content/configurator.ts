@@ -1,5 +1,97 @@
 import { generatePlaywrightTests } from "./playwrightGenerator";
 import { fieldRules } from './fieldRulesStore';
+import { FieldConstraints } from '../types/fieldTypes';
+
+function saveFieldRulesToLocalStorage() {
+    const rules = Array.from(fieldRules.entries()).reduce((acc, [field, constraintsArray]) => {
+        const key = field.name || field.id;
+        if (key) {
+            acc[key] = constraintsArray;
+        }
+        return acc;
+    }, {} as Record<string, FieldConstraints[]>);
+    localStorage.setItem('fieldRules', JSON.stringify(rules));
+}
+
+function loadFieldRulesFromLocalStorage() {
+    const rules = localStorage.getItem('fieldRules');
+    if (rules) {
+        const parsedRules = JSON.parse(rules);
+        Object.entries(parsedRules).forEach(([key, constraintsArray]) => {
+            const field = document.querySelector(`input[name="${key}"], input[id="${key}"]`) as HTMLInputElement;
+            if (field) {
+                fieldRules.set(field, constraintsArray as FieldConstraints[]);
+            }
+        });
+    }
+}
+
+function displayFieldRules(field: HTMLInputElement) {
+    const rulesContainer = document.createElement('div');
+    rulesContainer.style.border = '1px solid #e0e0e0';
+    rulesContainer.style.borderRadius = '8px';
+    rulesContainer.style.padding = '15px';
+    rulesContainer.style.marginTop = '20px';
+    rulesContainer.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+    rulesContainer.style.backgroundColor = '#fafafa';
+
+    const rules = fieldRules.get(field) as FieldConstraints[];
+    if (rules) {
+        for (let index = 0; index < rules.length; index++) {
+            const rule: FieldConstraints = rules[index];
+
+            const ruleDiv = document.createElement('div');
+            ruleDiv.style.display = 'flex';
+            ruleDiv.style.justifyContent = 'space-between';
+            ruleDiv.style.alignItems = 'center';
+            ruleDiv.style.marginBottom = '12px';
+            ruleDiv.style.padding = '10px';
+            ruleDiv.style.border = '1px solid #ddd';
+            ruleDiv.style.borderRadius = '5px';
+            ruleDiv.style.backgroundColor = '#fff';
+            ruleDiv.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)';
+
+            const ruleText = document.createElement('div');
+            ruleText.textContent = `Regel ${index + 1} | Feldtyp: ${rule.type} | Min: ${rule.min} | Max: ${rule.max}`;
+            ruleText.style.color = '#333';
+            ruleText.style.fontSize = '14px';
+            ruleText.style.fontWeight = '500';
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = '❌';
+            deleteButton.style.background = '#f44336';
+            deleteButton.style.border = 'none';
+            deleteButton.style.borderRadius = '50%';
+            deleteButton.style.width = '32px';
+            deleteButton.style.height = '32px';
+            deleteButton.style.color = 'white';
+            deleteButton.style.cursor = 'pointer';
+            deleteButton.style.display = 'flex';
+            deleteButton.style.justifyContent = 'center';
+            deleteButton.style.alignItems = 'center';
+            deleteButton.style.fontSize = '16px';
+            deleteButton.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+            deleteButton.addEventListener('mouseover', () => {
+                deleteButton.style.backgroundColor = '#d32f2f';
+            });
+            deleteButton.addEventListener('mouseout', () => {
+                deleteButton.style.backgroundColor = '#f44336';
+            });
+
+            deleteButton.addEventListener('click', () => {
+                rules.splice(index, 1);
+                saveFieldRulesToLocalStorage();
+                rulesContainer.removeChild(ruleDiv);
+            });
+
+            ruleDiv.appendChild(ruleText);
+            ruleDiv.appendChild(deleteButton);
+            rulesContainer.appendChild(ruleDiv);
+        }
+    }
+
+    return rulesContainer;
+}
 
 export function openFieldConfigurator(field: HTMLInputElement) {
     const configDiv = document.createElement('div');
@@ -80,17 +172,30 @@ export function openFieldConfigurator(field: HTMLInputElement) {
         const validMessage = validMessageInput.value;
         const invalidMessage = invalidMessageInput.value;
 
+        let constraints: FieldConstraints | undefined;
+
         if (fieldType === 'number') {
             const min = parseFloat((configDiv.querySelector('#min-value') as HTMLInputElement).value.trim());
             const max = parseFloat((configDiv.querySelector('#max-value') as HTMLInputElement).value.trim());
-            fieldRules.set(field, { type: 'number', min, max, validValues, invalidValues, validMessage, invalidMessage });
+            constraints = { type: 'number', min, max, validValues, invalidValues, validMessage, invalidMessage };
         } else if (fieldType === 'string') {
             const minLength = parseFloat((configDiv.querySelector('#min-value') as HTMLInputElement).value.trim());
             const maxLength = parseFloat((configDiv.querySelector('#max-value') as HTMLInputElement).value.trim());
-            fieldRules.set(field, { type: 'string', min: minLength, max: maxLength, validValues, invalidValues, validMessage, invalidMessage });
+            constraints = { type: 'string', min: minLength, max: maxLength, validValues, invalidValues, validMessage, invalidMessage };
+        }
+
+        if (constraints) {
+            if (!fieldRules.has(field)) {
+                fieldRules.set(field, []);
+            }
+            const existingRules = fieldRules.get(field) || [];
+            console.log('fieldRules.get(field):', fieldRules.get(field));
+            existingRules.push(constraints);
+            fieldRules.set(field, existingRules);
         }
 
         document.body.removeChild(configDiv);
+        saveFieldRulesToLocalStorage();
     });
 
     configDiv.querySelector('#generate-tests')?.addEventListener('click', () => {
@@ -100,4 +205,10 @@ export function openFieldConfigurator(field: HTMLInputElement) {
     configDiv.querySelector('#cancel-config')?.addEventListener('click', () => {
         document.body.removeChild(configDiv);
     });
+
+    // Laden der Regeln beim Öffnen des Konfigurators
+    loadFieldRulesFromLocalStorage();
+
+    const rulesContainer = displayFieldRules(field);
+    configDiv.appendChild(rulesContainer);
 }

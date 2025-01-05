@@ -6,15 +6,17 @@ export function validateField(field: HTMLInputElement) {
 
     let valid = true;
 
-    if (rules.type === 'number') {
-        const value = parseFloat(field.value);
-        if (rules.min !== undefined && value < rules.min) valid = false;
-        if (rules.max !== undefined && value > rules.max) valid = false;
-    } else if (rules.type === 'string') {
-        const value = field.value;
-        if (rules.min !== undefined && value.length < rules.min) valid = false;
-        if (rules.max !== undefined && value.length > rules.max) valid = false;
-    }
+    rules.forEach(rule => {
+        if (rule.type === 'number') {
+            const value = parseFloat(field.value);
+            if (rule.min !== undefined && value < rule.min) valid = false;
+            if (rule.max !== undefined && value > rule.max) valid = false;
+        } else if (rule.type === 'string') {
+            const value = field.value;
+            if (rule.min !== undefined && value.length < rule.min) valid = false;
+            if (rule.max !== undefined && value.length > rule.max) valid = false;
+        }
+    });
 
     if (!valid) {
         field.style.borderColor = 'red';
