@@ -7,4 +7,5 @@ export type FieldConstraints = {
     invalidValues?: string[];
     validMessage?: string;
     invalidMessage?: string;
+    submitButtonId?: string;
 };
