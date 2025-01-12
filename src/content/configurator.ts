@@ -67,7 +67,7 @@ function displayFieldRules(field: HTMLInputElement) {
             ruleText.textContent += ` | Erfolgsnachricht: ${rule.validMessage} | Fehlernachricht: ${rule.invalidMessage}`;
 
             const deleteButton = document.createElement('button');
-            deleteButton.textContent = '❌';
+            deleteButton.textContent = 'x';
             deleteButton.style.background = '#f44336';
             deleteButton.style.border = 'none';
             deleteButton.style.borderRadius = '50%';
@@ -102,7 +102,21 @@ function displayFieldRules(field: HTMLInputElement) {
     return rulesContainer;
 }
 
+function findSubmitButton() {
+    const selectors = ['button[type="submit"]', 'input[type="submit"]', 'button[id="submit"]', 'button[id="submit-button"]', 'button.submit', 'input.submit'];
+    for (const selector of selectors) {
+        const button = document.querySelector(selector);
+        if (button) {
+            return button.id || 'nicht definiert';
+            // return selector; Optionales Feature, um den richtigen Selector zu finden
+        }
+    }
+    return 'nicht definiert';
+}
+
 export function openFieldConfigurator(field: HTMLInputElement) {
+    const submitButtonId = findSubmitButton();
+
     const configDiv = document.createElement('div');
     configDiv.style.position = 'absolute';
     configDiv.style.top = '35%';
@@ -126,6 +140,10 @@ export function openFieldConfigurator(field: HTMLInputElement) {
             <button id="tab-saved-tests" style="padding: 10px; cursor: pointer;">Gespeicherte Tests</button>
         </div>
         <div id="create-test-tab" style="margin-top: 20px;">
+            <div style="margin-bottom: 20px; display: flex; align-items: center;">
+                <label style="margin-right: 10px;">Submit-Button ID: </label>
+                <input type="text" id="submit-button-id" value="${submitButtonId}" style="width: 200px; padding: 5px;"/>
+            </div>
             <label>Testtyp:</label>
             <select id="field-type" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc;">
                 <option value="number">Zahlenbereich</option>
@@ -143,17 +161,23 @@ export function openFieldConfigurator(field: HTMLInputElement) {
             <div id="invalid-values-config" style="display: none;">
                 <label>Ungültige Werte:</label><input type="text" id="invalid-values" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc;"/><br/>
             </div>
-            <label>Erfolgsnachricht:</label><input type="text" id="valid-message" placeholder="Erfolgsnachricht" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc;"/><br/>
-            <label>Fehlernachricht:</label><input type="text" id="invalid-message" placeholder="Fehlernachricht" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc;"/><br/>
+            <div id="valid-message-config" style="display: block;">
+                <label>Erfolgsnachricht:</label><input type="text" id="valid-message" placeholder="Erfolgsnachricht" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc;"/><br/>
+            </div>
+            <div id="invalid-message-config" style="display: block;">
+                <label>Fehlernachricht:</label><input type="text" id="invalid-message" placeholder="Fehlernachricht" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc;"/><br/>
+            </div>
             <div style="text-align: center;">
                 <button id="save-config" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px;">Speichern</button>
-                <button id="generate-tests" style="padding: 10px 20px; background-color: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">Tests für dieses Feld generieren</button>
-                <button id="cancel-config" style="padding: 10px 20px; background-color: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">Abbrechen</button>
             </div>
         </div>
         <div id="saved-tests-tab" style="display: none; margin-top: 20px;">
             <h4 style="text-align: center;">Gespeicherte Tests</h4>
             <div id="rules-container"></div>
+        </div>
+        <div style="text-align: center;">
+            <button id="generate-tests" style="padding: 10px 20px; background-color: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">Tests für dieses Feld generieren</button>
+            <button id="cancel-config" style="padding: 10px 20px; background-color: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">Abbrechen</button>
         </div>
     `;
 
@@ -167,6 +191,8 @@ export function openFieldConfigurator(field: HTMLInputElement) {
     const numberStringConfig = configDiv.querySelector('#number-string-config') as HTMLElement;
     const validValuesConfig = configDiv.querySelector('#valid-values-config') as HTMLElement;
     const invalidValuesConfig = configDiv.querySelector('#invalid-values-config') as HTMLElement;
+    const validMessageConfig = configDiv.querySelector('#valid-message-config') as HTMLElement;
+    const invalidMessageConfig = configDiv.querySelector('#invalid-message-config') as HTMLElement;
 
     tabCreateTest.addEventListener('click', () => {
         createTestTab.style.display = 'block';
@@ -174,13 +200,28 @@ export function openFieldConfigurator(field: HTMLInputElement) {
         configDiv.removeChild(rulesContainer);
     });
 
-    tabSavedTests.addEventListener('click', () => {
+    function handleTabSavedTestsClick() {
+        if (savedTestsTab.style.display === 'block') {
+            configDiv.removeChild(rulesContainer);
+        }
         loadFieldRulesFromLocalStorage();
         rulesContainer = displayFieldRules(field);
         createTestTab.style.display = 'none';
         savedTestsTab.style.display = 'block';
+        const buttonContainer = createButtonContainer();
         configDiv.appendChild(rulesContainer);
-    });
+        configDiv.appendChild(buttonContainer);
+    }
+
+    function createButtonContainer() {
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.textAlign = 'center';
+        buttonContainer.appendChild(configDiv.querySelector('#generate-tests') as HTMLElement);
+        buttonContainer.appendChild(configDiv.querySelector('#cancel-config') as HTMLElement);
+        return buttonContainer;
+    }
+
+    tabSavedTests.addEventListener('click', handleTabSavedTestsClick);
 
     testTypeSelect.addEventListener('change', () => {
         const selectedType = testTypeSelect.value;
@@ -188,14 +229,20 @@ export function openFieldConfigurator(field: HTMLInputElement) {
             numberStringConfig.style.display = 'block';
             validValuesConfig.style.display = 'none';
             invalidValuesConfig.style.display = 'none';
+            validMessageConfig.style.display = 'block';
+            invalidMessageConfig.style.display = 'block';
         } else if (selectedType === 'validValues') {
             numberStringConfig.style.display = 'none';
             validValuesConfig.style.display = 'block';
             invalidValuesConfig.style.display = 'none';
+            validMessageConfig.style.display = 'block';
+            invalidMessageConfig.style.display = 'none';
         } else if (selectedType === 'invalidValues') {
             numberStringConfig.style.display = 'none';
             validValuesConfig.style.display = 'none';
             invalidValuesConfig.style.display = 'block';
+            validMessageConfig.style.display = 'none';
+            invalidMessageConfig.style.display = 'block';
         }
     });
 
@@ -205,21 +252,22 @@ export function openFieldConfigurator(field: HTMLInputElement) {
         const invalidValues = (configDiv.querySelector('#invalid-values') as HTMLInputElement).value.split(',').map(v => v.trim()).filter(v => v);
         const validMessage = (configDiv.querySelector('#valid-message') as HTMLInputElement).value;
         const invalidMessage = (configDiv.querySelector('#invalid-message') as HTMLInputElement).value;
+        const submitButtonId = (configDiv.querySelector('#submit-button-id') as HTMLInputElement).value;
 
         let constraints: FieldConstraints | undefined;
 
         if (fieldType === 'number') {
             const min = parseFloat((configDiv.querySelector('#min-value') as HTMLInputElement).value.trim());
             const max = parseFloat((configDiv.querySelector('#max-value') as HTMLInputElement).value.trim());
-            constraints = { type: 'number', min, max, validValues, invalidValues, validMessage, invalidMessage };
+            constraints = { type: 'number', min, max, validValues, invalidValues, validMessage, invalidMessage, submitButtonId };
         } else if (fieldType === 'string') {
             const minLength = parseFloat((configDiv.querySelector('#min-value') as HTMLInputElement).value.trim());
             const maxLength = parseFloat((configDiv.querySelector('#max-value') as HTMLInputElement).value.trim());
-            constraints = { type: 'string', min: minLength, max: maxLength, validValues, invalidValues, validMessage, invalidMessage };
+            constraints = { type: 'string', min: minLength, max: maxLength, validValues, invalidValues, validMessage, invalidMessage, submitButtonId };
         } else if (fieldType === 'validValues') {
-            constraints = { type: 'validValues', validValues, validMessage, invalidMessage };
+            constraints = { type: 'validValues', validValues, validMessage, invalidMessage, submitButtonId };
         } else if (fieldType === 'invalidValues') {
-            constraints = { type: 'invalidValues', invalidValues, validMessage, invalidMessage };
+            constraints = { type: 'invalidValues', invalidValues, validMessage, invalidMessage, submitButtonId };
         }
 
         if (constraints) {
@@ -233,7 +281,6 @@ export function openFieldConfigurator(field: HTMLInputElement) {
         }
 
         saveFieldRulesToLocalStorage();
-
     });
 
     configDiv.querySelector('#generate-tests')?.addEventListener('click', () => {
