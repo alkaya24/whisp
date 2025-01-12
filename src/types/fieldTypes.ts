@@ -1,5 +1,5 @@
 export type FieldConstraints = {
-    type: 'number' | 'string';
+    type: 'number' | 'string' | 'validValues' | 'invalidValues';
     min?: number;
     max?: number;
     required?: boolean;

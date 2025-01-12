@@ -110,7 +110,7 @@ test('Validiere Feld ${fieldId} für Textlängen innerhalb des zulässigen Berei
             `;
         }
 
-        if (rule.validValues && rule.validValues.length > 0) {
+        if (rule.type === 'validValues' && rule.validValues && rule.validValues.length > 0) {
             testCode += `
 import { test, expect } from '@playwright/test';
 
@@ -135,7 +135,7 @@ test('Validiere Feld ${fieldId} für gültige Werte', async ({ page }) => {
             `;
         }
 
-        if (rule.invalidValues && rule.invalidValues.length > 0) {
+        if (rule.type === 'invalidValues' && rule.invalidValues && rule.invalidValues.length > 0) {
             testCode += `
 import { test, expect } from '@playwright/test';
 
