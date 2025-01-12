@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test-Webseite für Whisp Extension</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input, select, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .checkbox-group {
+            width: 5%;
+        }
+        .radio-group {
+            width: 5%;
+        }
+        .error-message {
+            color: red;
+            font-weight: bold;
+            display: none;
+        }
+        .success-message {
+            color: green;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<h1>Test-Webseite</h1>
+<p>Diese Webseite dient zur Demonstration und Testung der Whisp Extension.</p>
+<form id="test-form">
+    <label for="text-field">Textfeld</label>
+    <input type="text" id="text-field" name="text-field" placeholder="Geben Sie etwas ein">
+
+    <label for="email-field">E-Mail-Feld</label>
+    <input type="email" id="email-field" name="email-field" placeholder="Geben Sie Ihre E-Mail ein">
+
+    <label for="password-field">Passwortfeld</label>
+    <input type="password" id="password-field" name="password-field" placeholder="Passwort eingeben">
+
+    <label for="number-field">Zahlenfeld</label>
+    <input type="number" id="number-field" name="number-field" placeholder="Zahl eingeben">
+
+    <label>Checkbox</label>
+    <input type="checkbox" class="checkbox-group" id="checkbox-1" name="checkbox-group" value="Option1"> Option 1<br>
+    <input type="checkbox" class="checkbox-group" id="checkbox-2" name="checkbox-group" value="Option2"> Option 2<br>
+
+    <label>Radio-Buttons</label>
+    <input type="radio" class="radio-group" id="radio-1" name="radio-group" value="Option1"> Option 1<br>
+    <input type="radio" class="radio-group" id="radio-2" name="radio-group" value="Option2"> Option 2<br>
+
+    <label for="dropdown">Dropdown-Menü</label>
+    <select id="dropdown" name="dropdown">
+        <option value="option1">Option 1</option>
+        <option value="option2">Option 2</option>
+        <option value="option3">Option 3</option>
+    </select>
+
+    <label for="textarea">Textbereich</label>
+    <textarea id="textarea" name="textarea" rows="5" placeholder="Geben Sie Ihren Text ein"></textarea>
+
+    <button type="button" id="submit-button">Abschicken</button>
+    <p class="success-message" id="success-message">Formular wurde erfolgreich abgeschickt!</p>
+    <p class="error-message" id="error-message">Das Passwort ist falsch!</p>
+</form>
+
+<script>
+    document.getElementById('submit-button').addEventListener('click', function() {
+        const passwordField = document.getElementById('password-field');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+
+        // Überprüfen, ob das Passwort korrekt ist
+        if (passwordField.value === 'Formularflüsterer') {
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+            // Hier könntest du das Formular abschicken oder andere Logik implementieren
+            // document.getElementById('test-form').submit();
+        } else {
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'block';
+        }
+    });
+</script>
+</body>
+</html>
