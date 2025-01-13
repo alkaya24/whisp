@@ -1,4 +1,4 @@
-import { findBasicInputFields } from './detectFields';
+import { findBasicInputFields, findCheckboxes, labelAndCountCheckboxes } from './detectFields';
 import { openFieldConfigurator } from './configurator';
 import { validateField } from './validation';
 import { generatePlaywrightTests } from './playwrightGenerator';
@@ -83,6 +83,7 @@ function addTestOutputBox() {
 }
 
 window.addEventListener('load', () => {
+    // Grundlegende Eingabefelder erkennen
     const fields = findBasicInputFields();
     fields.forEach((field, index) => {
         field.style.border = "2px solid red";
@@ -112,5 +113,11 @@ window.addEventListener('load', () => {
     });
 
     updateFieldCountOverlay(fields.length);
-    addTestOutputBox();  // Testausgabe-Fenster hinzufügen
+
+    // Checkboxen erkennen und zählen
+    const checkboxes = findCheckboxes();
+    labelAndCountCheckboxes(checkboxes);
+
+    // Testausgabe-Fenster hinzufügen
+    addTestOutputBox();
 });
