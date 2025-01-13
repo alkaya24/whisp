@@ -60,8 +60,14 @@ function displayFieldRules(field: HTMLInputElement) {
             if (rule.type === 'number' || rule.type === 'string') {
                 ruleText.textContent += ` | Min: ${rule.min} | Max: ${rule.max}`;
             }
-            if (rule.type === 'validValues' || rule.type === 'invalidValues') {
-                ruleText.textContent += ` | Gültige Werte: ${rule.validValues?.join(', ') || 'Keine'} | Ungültige Werte: ${rule.invalidValues?.join(', ') || 'Keine'}`;
+            if (rule.type === 'validValues') {
+                ruleText.textContent += ` | Gültige Werte: ${rule.validValues?.join(', ') || 'Keine'}`;
+            }
+            if (rule.type === 'invalidValues') {
+                ruleText.textContent += ` | Ungültige Werte: ${rule.invalidValues?.join(', ') || 'Keine'}`;
+            }
+            if (rule.type === 'checkbox') {
+                ruleText.textContent += ` | Erforderlich: ${rule.required ? 'Ja' : 'Nein'}`;
             }
             ruleText.textContent += ` | Erfolgsnachricht: ${rule.validMessage} | Fehlernachricht: ${rule.invalidMessage}`;
 
@@ -162,7 +168,7 @@ export function openFieldConfigurator(field: HTMLInputElement) {
                 <label>Ungültige Werte:</label><input type="text" id="invalid-values" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc;"/><br/>
             </div>
             <div id="checkbox-config" style="display: none; align-items: center; margin-bottom: 15px;">
-                <label style="margin-right: 2px;">Erforderlich:</label><input type="checkbox" id="required-checkbox"/>
+                <label style="margin-right: 2px;">Erforderlich:</label><input type="checkbox" id="required-checkbox" checked/>
             </div>
             <div id="valid-message-config" style="display: block;">
                 <label>Erfolgsnachricht:</label><input type="text" id="valid-message" placeholder="Erfolgsnachricht" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc;"/><br/>
@@ -242,13 +248,13 @@ export function openFieldConfigurator(field: HTMLInputElement) {
             invalidValuesConfig.style.display = 'none';
             checkboxConfig.style.display = 'none';
             validMessageConfig.style.display = 'block';
-            invalidMessageConfig.style.display = 'none';
+            invalidMessageConfig.style.display = 'block';
         } else if (selectedType === 'invalidValues') {
             numberStringConfig.style.display = 'none';
             validValuesConfig.style.display = 'none';
             invalidValuesConfig.style.display = 'block';
             checkboxConfig.style.display = 'none';
-            validMessageConfig.style.display = 'none';
+            validMessageConfig.style.display = 'block';
             invalidMessageConfig.style.display = 'block';
         } else if (selectedType === 'checkbox') {
             numberStringConfig.style.display = 'none';
@@ -258,6 +264,11 @@ export function openFieldConfigurator(field: HTMLInputElement) {
             validMessageConfig.style.display = 'block';
             invalidMessageConfig.style.display = 'block';
         }
+    });
+
+    configDiv.querySelector('#required-checkbox')?.addEventListener('change', (event) => {
+        const isChecked = (event.target as HTMLInputElement).checked;
+        invalidMessageConfig.style.display = isChecked ? 'block' : 'none';
     });
 
     configDiv.querySelector('#save-config')?.addEventListener('click', () => {

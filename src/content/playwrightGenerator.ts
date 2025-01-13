@@ -126,16 +126,24 @@ test('Gültige Werte ${fieldId}', async ({ page }) => {
     const field = await page.locator('input[id="${fieldId}"]');
     const submitButton = await page.locator('button[id="${rule.submitButtonId}"]');
 `;
+        // Positive Tests
         for (const value of rule.validValues) {
             testCode += `
+    // Positive Tests
     await field.fill('${value}');
     await submitButton.click();
-`;
-            if (rule.validMessage) {
-                testCode += `
     await expect(page.locator('body')).toContainText('${rule.validMessage}');
 `;
-            }
+        }
+        // Negative Tests mit Dummy-Werten
+        const dummyValues = ['dummy1', 'dummy2', 'dummy3'];
+        for (const value of dummyValues) {
+            testCode += `
+    // Negative Tests
+    await field.fill('${value}');
+    await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
+`;
         }
         testCode += `
 });
@@ -153,16 +161,24 @@ test('Ungültige Werte ${fieldId}', async ({ page }) => {
     const field = await page.locator('input[id="${fieldId}"]');
     const submitButton = await page.locator('button[id="${rule.submitButtonId}"]');
 `;
+        // Positive Tests
         for (const value of rule.invalidValues) {
             testCode += `
+    // Positive Tests
     await field.fill('${value}');
     await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.validMessage}');
 `;
-            if (rule.invalidMessage) {
-                testCode += `
+        }
+        // Negative Tests mit Dummy-Werten
+        const dummyValues = ['dummy1', 'dummy2', 'dummy3'];
+        for (const value of dummyValues) {
+            testCode += `
+    // Negative Tests
+    await field.fill('${value}');
+    await submitButton.click();
     await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
 `;
-            }
         }
         testCode += `
 });
@@ -173,8 +189,7 @@ test('Ungültige Werte ${fieldId}', async ({ page }) => {
 
 function generateCheckboxTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints) {
     let testCode = '';
-    if (rule.required) {
-        testCode += `
+    testCode += `
 test('Checkbox ${fieldId}', async ({ page }) => {
     await page.goto('${window.location.href}');
     const checkbox = await page.locator('input[id="${fieldId}"]');
@@ -188,9 +203,8 @@ test('Checkbox ${fieldId}', async ({ page }) => {
     // Negativer Test
     await checkbox.uncheck();
     await submitButton.click();
-    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
+    await expect(page.locator('body')).toContainText('${rule.required ? rule.invalidMessage : rule.validMessage}');
 });
 `;
-    }
     return testCode;
 }
