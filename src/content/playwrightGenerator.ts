@@ -1,163 +1,27 @@
 import { fieldRules } from './fieldRulesStore';
+import { FieldConstraints } from '../types/fieldTypes';
 
 export function generatePlaywrightTests(field: HTMLInputElement) {
     const rules = fieldRules.get(field);
     if (!rules) return;
 
-    const fieldId = field.name || field.id || 'unbenanntes Feld';
-    let testCode = '';
+    const fieldId = field.id || field.name || 'unbenanntes Feld';
+    let testCode = `import { test, expect } from '@playwright/test';\n\n`;
 
     rules.forEach(rule => {
-        if ((rule.min !== undefined || rule.max !== undefined) && rule.type === 'number') {
-            testCode += `
-import { test, expect } from '@playwright/test';
-
-test('Validiere Feld ${fieldId} für Zahlen innerhalb des zulässigen Bereichs', async ({ page }) => {
-    await page.goto('${window.location.href}');
-    
-    const field = await page.locator('input[name="${field.name}"]');
-`;
-
-            if (rule.min !== undefined) {
-                testCode += `
-    // Teste Zahlen in der Nähe des Minimums
-    const minNumber = ${rule.min};
-    const minNumberAddOne = minNumber+1;
-    const minNumberSubtractOne = minNumber-1;
-    
-    await field.fill(minNumber.toString());
-    await expect(field).toHaveValue(minNumber.toString());
-    
-    await field.fill(minNumberAddOne.toString());
-    await expect(field).toHaveValue(minNumberAddOne.toString());
-    
-    await field.fill(minNumberSubtractOne.toString());
-    await expect(field).toHaveValue(minNumberSubtractOne.toString());
-`;
-            }
-
-            if (rule.max !== undefined) {
-                testCode += `
-    // Teste Zahlen in der Nähe des Maximums
-    const nearMax = ${rule.max};
-    const nearMaxAddOne = nearMax + 1;
-    const nearMaxSubtractOne = nearMax - 1;
-    
-    await field.fill(nearMax.toString());
-    await expect(field).toHaveValue(nearMax.toString());
-    
-    await field.fill(nearMaxAddOne.toString());
-    await expect(field).toHaveValue(nearMaxAddOne.toString());
-    
-    await field.fill(nearMaxSubtractOne.toString());
-    await expect(field).toHaveValue(nearMaxSubtractOne.toString());
-`;
-            }
-
-            testCode += `
-});
-            `;
-        }
-
-        if ((rule.min !== undefined || rule.max !== undefined) && rule.type === 'string') {
-            testCode += `
-import { test, expect } from '@playwright/test';
-
-test('Validiere Feld ${fieldId} für Textlängen innerhalb des zulässigen Bereichs', async ({ page }) => {
-    await page.goto('${window.location.href}');
-    
-    const field = await page.locator('input[name="${field.name}"]');
-`;
-
-            if (rule.min !== undefined) {
-                testCode += `
-    // Teste zufällige Texte in der Nähe der minimalen Länge
-    const minLength = 'a'.repeat(${rule.min});
-    const minLengthAddOne = 'a'.repeat(${rule.min} + 1);
-    const minLengthSubtractOne = 'a'.repeat(${rule.min} - 1);
-    
-    await field.fill(minLength);
-    await expect(field).toHaveValue(minLength);
-    
-    await field.fill(minLengthAddOne.toString());
-    await expect(field).toHaveValue(minLengthAddOne.toString());
-    
-    await field.fill(minLengthSubtractOne.toString());
-    await expect(field).toHaveValue(minLengthSubtractOne.toString());
-`;
-            }
-
-            if (rule.max !== undefined) {
-                testCode += `
-    // Teste zufällige Texte in der Nähe der maximalen Länge
-    const maxLength = 'a'.repeat(${rule.max});
-    const maxLengthAddOne = 'a'.repeat(${rule.max} + 1);
-    const maxLengthSubtractOne = 'a'.repeat(${rule.max} - 1);
-    
-    await field.fill(maxLength);
-    await expect(field).toHaveValue(maxLength);
-    
-    await field.fill(maxLengthAddOne.toString());
-    await expect(field).toHaveValue(maxLengthAddOne.toString());
-    
-    await field.fill(maxLengthSubtractOne.toString());
-    await expect(field).toHaveValue(maxLengthSubtractOne.toString());
-`;
-            }
-
-            testCode += `
-});
-            `;
-        }
-
-        if (rule.validValues && rule.validValues.length > 0) {
-            testCode += `
-import { test, expect } from '@playwright/test';
-
-test('Validiere Feld ${fieldId} für gültige Werte', async ({ page }) => {
-    await page.goto('${window.location.href}');
-    const field = await page.locator('input[name="${field.name}"]');
-    const submitButton = await page.locator('button[type="submit"]');
-`;
-            for (const value of rule.validValues) {
-                testCode += `
-    await field.fill('${value}');
-    await submitButton.click();
-`;
-                if (rule.validMessage) {
-                    testCode += `
-    await expect(page.locator('body')).toContainText('${rule.validMessage}');
-`;
-                }
-            }
-            testCode += `
-});
-            `;
-        }
-
-        if (rule.invalidValues && rule.invalidValues.length > 0) {
-            testCode += `
-import { test, expect } from '@playwright/test';
-
-test('Validiere Feld ${fieldId} für ungültige Werte', async ({ page }) => {
-    await page.goto('${window.location.href}');
-    const field = await page.locator('input[name="${field.name}"]');
-    const submitButton = await page.locator('button[type="submit"]');
-`;
-            for (const value of rule.invalidValues) {
-                testCode += `
-    await field.fill('${value}');
-    await submitButton.click();
-`;
-                if (rule.invalidMessage) {
-                    testCode += `
-    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
-`;
-                }
-            }
-            testCode += `
-});
-            `;
+        switch (rule.type) {
+            case 'number':
+                testCode += generateNumberTests(fieldId, field, rule);
+                break;
+            case 'string':
+                testCode += generateStringTests(fieldId, field, rule);
+                break;
+            case 'validValues':
+                testCode += generateValidValuesTests(fieldId, field, rule);
+                break;
+            case 'invalidValues':
+                testCode += generateInvalidValuesTests(fieldId, field, rule);
+                break;
         }
     });
 
@@ -165,4 +29,141 @@ test('Validiere Feld ${fieldId} für ungültige Werte', async ({ page }) => {
     if (outputBox) {
         outputBox.textContent += testCode + '\n';
     }
+}
+
+function generateNumberTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints) {
+    let testCode = '';
+    if (rule.min !== undefined && rule.max !== undefined) {
+        testCode += `
+test('Zahlenfeld ${fieldId}', async ({ page }) => {
+    await page.goto('${window.location.href}');
+    const field = await page.locator('input[id="${fieldId}"]');
+    const submitButton = await page.locator('button[id="${rule.submitButtonId}"]');`
+        // const submitButton = await page.locator('${rule.submitButtonId}'); // Optionales Feature, um den richtigen Selector zu finden
+
+        testCode += `
+        
+    // Positive Tests
+    await field.fill('${rule.min}');
+    await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.validMessage}');
+
+    await field.fill('${rule.max}');
+    await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.validMessage}');
+
+    await field.fill('${rule.min + 1}');
+    await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.validMessage}');
+
+    await field.fill('${rule.max - 1}');
+    await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.validMessage}');
+
+    // Negative Tests
+    await field.fill('${rule.min - 1}');
+    await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
+
+    await field.fill('${rule.max + 1}');
+    await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
+});
+`;
+    }
+    return testCode;
+}
+
+function generateStringTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints) {
+    let testCode = '';
+    if (rule.min !== undefined && rule.max !== undefined) {
+        testCode += `
+test('Textfeld ${fieldId}', async ({ page }) => {
+    await page.goto('${window.location.href}');
+    const field = await page.locator('input[id="${fieldId}"]');
+    const submitButton = await page.locator('button[id="${rule.submitButtonId}"]');
+
+    // Positive Tests
+    await field.fill('a'.repeat(${rule.min}));
+    await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.validMessage}');
+
+    await field.fill('a'.repeat(${rule.max}));
+    await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.validMessage}');
+
+    await field.fill('a'.repeat(${rule.min + 1}));
+    await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.validMessage}');
+
+    await field.fill('a'.repeat(${rule.max - 1}));
+    await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.validMessage}');
+
+    // Negative Tests
+    await field.fill('a'.repeat(${rule.min - 1}));
+    await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
+
+    await field.fill('a'.repeat(${rule.max + 1}));
+    await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
+});
+`;
+    }
+    return testCode;
+}
+
+function generateValidValuesTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints) {
+    let testCode = '';
+    if (rule.validValues && rule.validValues.length > 0) {
+        testCode += `
+test('Gültige Werte ${fieldId}', async ({ page }) => {
+    await page.goto('${window.location.href}');
+    const field = await page.locator('input[id="${fieldId}"]');
+    const submitButton = await page.locator('button[id="${rule.submitButtonId}"]');
+`;
+        for (const value of rule.validValues) {
+            testCode += `
+    await field.fill('${value}');
+    await submitButton.click();
+`;
+            if (rule.validMessage) {
+                testCode += `
+    await expect(page.locator('body')).toContainText('${rule.validMessage}');
+`;
+            }
+        }
+        testCode += `
+});
+`;
+    }
+    return testCode;
+}
+
+function generateInvalidValuesTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints) {
+    let testCode = '';
+    if (rule.invalidValues && rule.invalidValues.length > 0) {
+        testCode += `
+test('Ungültige Werte ${fieldId}', async ({ page }) => {
+    await page.goto('${window.location.href}');
+    const field = await page.locator('input[id="${fieldId}"]');
+    const submitButton = await page.locator('button[id="${rule.submitButtonId}"]');
+`;
+        for (const value of rule.invalidValues) {
+            testCode += `
+    await field.fill('${value}');
+    await submitButton.click();
+`;
+            if (rule.invalidMessage) {
+                testCode += `
+    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
+`;
+            }
+        }
+        testCode += `
+});
+`;
+    }
+    return testCode;
 }
