@@ -1,7 +1,6 @@
 import { generatePlaywrightTests } from "./playwrightGenerator";
 import { fieldRules } from './fieldRulesStore';
 import { FieldConstraints } from '../types/fieldTypes';
-import { copyFile } from "fs";
 
 function saveFieldRulesToLocalStorage() {
     const rules = Array.from(fieldRules.entries()).reduce((acc, [field, constraintsArray]) => {
@@ -105,7 +104,7 @@ function displayFieldRules(field: HTMLInputElement) {
 function findSubmitButton() {
     const selectors = ['button[type="submit"]', 'input[type="submit"]', 'button[id="submit"]', 'button[id="submit-button"]', 'button.submit', 'input.submit'];
     for (const selector of selectors) {
-        const button = document.querySelector(selector);
+        const button = document.querySelector(selector); //TODO: Nach form selector suchen
         if (button) {
             return button.id || 'nicht definiert';
             // return selector; Optionales Feature, um den richtigen Selector zu finden
@@ -119,7 +118,7 @@ export function openFieldConfigurator(field: HTMLInputElement) {
 
     const configDiv = document.createElement('div');
     configDiv.style.position = 'absolute';
-    configDiv.style.top = '35%';
+    configDiv.style.top = '50%';
     configDiv.style.left = '50%';
     configDiv.style.transform = 'translate(-50%, -50%)';
     configDiv.style.backgroundColor = 'white';
@@ -150,6 +149,7 @@ export function openFieldConfigurator(field: HTMLInputElement) {
                 <option value="string">Textlänge</option>
                 <option value="validValues">Gültige Eingaben</option>
                 <option value="invalidValues">Ungültige Eingaben</option>
+                <option value="checkbox">Checkbox</option>
             </select><br/><br/>
             <div id="number-string-config">
                 <label>Minimum:</label><input type="number" id="min-value" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc;"/><br/>
@@ -160,6 +160,9 @@ export function openFieldConfigurator(field: HTMLInputElement) {
             </div>
             <div id="invalid-values-config" style="display: none;">
                 <label>Ungültige Werte:</label><input type="text" id="invalid-values" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc;"/><br/>
+            </div>
+            <div id="checkbox-config" style="display: none; align-items: center; margin-bottom: 15px;">
+                <label style="margin-right: 2px;">Erforderlich:</label><input type="checkbox" id="required-checkbox"/>
             </div>
             <div id="valid-message-config" style="display: block;">
                 <label>Erfolgsnachricht:</label><input type="text" id="valid-message" placeholder="Erfolgsnachricht" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc;"/><br/>
@@ -191,6 +194,7 @@ export function openFieldConfigurator(field: HTMLInputElement) {
     const numberStringConfig = configDiv.querySelector('#number-string-config') as HTMLElement;
     const validValuesConfig = configDiv.querySelector('#valid-values-config') as HTMLElement;
     const invalidValuesConfig = configDiv.querySelector('#invalid-values-config') as HTMLElement;
+    const checkboxConfig = configDiv.querySelector('#checkbox-config') as HTMLElement;
     const validMessageConfig = configDiv.querySelector('#valid-message-config') as HTMLElement;
     const invalidMessageConfig = configDiv.querySelector('#invalid-message-config') as HTMLElement;
 
@@ -229,19 +233,29 @@ export function openFieldConfigurator(field: HTMLInputElement) {
             numberStringConfig.style.display = 'block';
             validValuesConfig.style.display = 'none';
             invalidValuesConfig.style.display = 'none';
+            checkboxConfig.style.display = 'none';
             validMessageConfig.style.display = 'block';
             invalidMessageConfig.style.display = 'block';
         } else if (selectedType === 'validValues') {
             numberStringConfig.style.display = 'none';
             validValuesConfig.style.display = 'block';
             invalidValuesConfig.style.display = 'none';
+            checkboxConfig.style.display = 'none';
             validMessageConfig.style.display = 'block';
             invalidMessageConfig.style.display = 'none';
         } else if (selectedType === 'invalidValues') {
             numberStringConfig.style.display = 'none';
             validValuesConfig.style.display = 'none';
             invalidValuesConfig.style.display = 'block';
+            checkboxConfig.style.display = 'none';
             validMessageConfig.style.display = 'none';
+            invalidMessageConfig.style.display = 'block';
+        } else if (selectedType === 'checkbox') {
+            numberStringConfig.style.display = 'none';
+            validValuesConfig.style.display = 'none';
+            invalidValuesConfig.style.display = 'none';
+            checkboxConfig.style.display = 'flex';
+            validMessageConfig.style.display = 'block';
             invalidMessageConfig.style.display = 'block';
         }
     });
@@ -253,6 +267,7 @@ export function openFieldConfigurator(field: HTMLInputElement) {
         const validMessage = (configDiv.querySelector('#valid-message') as HTMLInputElement).value;
         const invalidMessage = (configDiv.querySelector('#invalid-message') as HTMLInputElement).value;
         const submitButtonId = (configDiv.querySelector('#submit-button-id') as HTMLInputElement).value;
+        const required = (configDiv.querySelector('#required-checkbox') as HTMLInputElement).checked;
 
         let constraints: FieldConstraints | undefined;
 
@@ -268,6 +283,8 @@ export function openFieldConfigurator(field: HTMLInputElement) {
             constraints = { type: 'validValues', validValues, validMessage, invalidMessage, submitButtonId };
         } else if (fieldType === 'invalidValues') {
             constraints = { type: 'invalidValues', invalidValues, validMessage, invalidMessage, submitButtonId };
+        } else if (fieldType === 'checkbox') {
+            constraints = { type: 'checkbox', required, validMessage, invalidMessage, submitButtonId };
         }
 
         if (constraints) {

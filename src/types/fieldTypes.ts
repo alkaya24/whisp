@@ -1,5 +1,5 @@
 export type FieldConstraints = {
-    type: 'number' | 'string' | 'validValues' | 'invalidValues';
+    type: 'number' | 'string' | 'validValues' | 'invalidValues' | 'checkbox';
     min?: number;
     max?: number;
     required?: boolean;

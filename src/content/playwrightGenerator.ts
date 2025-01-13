@@ -22,6 +22,9 @@ export function generatePlaywrightTests(field: HTMLInputElement) {
             case 'invalidValues':
                 testCode += generateInvalidValuesTests(fieldId, field, rule);
                 break;
+            case 'checkbox':
+                testCode += generateCheckboxTests(fieldId, field, rule);
+                break;
         }
     });
 
@@ -162,6 +165,30 @@ test('Ungültige Werte ${fieldId}', async ({ page }) => {
             }
         }
         testCode += `
+});
+`;
+    }
+    return testCode;
+}
+
+function generateCheckboxTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints) {
+    let testCode = '';
+    if (rule.required) {
+        testCode += `
+test('Checkbox ${fieldId}', async ({ page }) => {
+    await page.goto('${window.location.href}');
+    const checkbox = await page.locator('input[id="${fieldId}"]');
+    const submitButton = await page.locator('button[id="${rule.submitButtonId}"]');
+
+    // Positiver Test
+    await checkbox.check();
+    await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.validMessage}');
+
+    // Negativer Test
+    await checkbox.uncheck();
+    await submitButton.click();
+    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
 });
 `;
     }
