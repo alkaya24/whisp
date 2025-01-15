@@ -16,10 +16,10 @@ export function labelAndCountCheckboxes(checkboxes: HTMLInputElement[]) {
     checkboxes.forEach((checkbox, index) => {
         // Markiere Checkboxen mit einem Rahmen
         checkbox.style.border = "2px solid orange";
-
         // Erstelle ein Label für die Checkbox
         const label = document.createElement('span');
         label.innerText = `Checkbox ${index + 1}`;
+        label.classList.add('content-ui-element');
         label.style.position = 'absolute';
         label.style.backgroundColor = 'yellow';
         label.style.color = 'black';
@@ -47,6 +47,7 @@ function updateCheckboxCountOverlay(count: number) {
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'checkbox-count-overlay';
+        overlay.classList.add('content-ui-element');
         overlay.style.position = 'fixed';
         overlay.style.bottom = '70px';
         overlay.style.right = '10px';

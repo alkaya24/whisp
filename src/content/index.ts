@@ -1,7 +1,10 @@
 import { findBasicInputFields, findCheckboxes, labelAndCountCheckboxes } from './detectFields';
-import { openFieldConfigurator } from './configurator';
+import { openFieldConfigurator, initializeConfigDiv } from './configurator';
 import { validateField } from './validation';
 import { generatePlaywrightTests } from './playwrightGenerator';
+
+// Initialisiere das Konfigurator-Element beim Laden des Skripts
+initializeConfigDiv();
 
 function updateFieldCountOverlay(count: number) {
     let overlay = document.getElementById('field-count-overlay') as HTMLElement;
@@ -9,6 +12,7 @@ function updateFieldCountOverlay(count: number) {
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'field-count-overlay';
+        overlay.classList.add('content-ui-element');
         overlay.style.position = 'fixed';
         overlay.style.bottom = '10px';
         overlay.style.right = '10px';
@@ -27,6 +31,7 @@ function updateFieldCountOverlay(count: number) {
 function addTestOutputBox() {
     const outputContainer = document.createElement('div');
     outputContainer.id = 'test-output-container';
+    outputContainer.classList.add('content-ui-element');
     outputContainer.style.position = 'fixed';
     outputContainer.style.bottom = '10px';
     outputContainer.style.left = '10px';
@@ -83,12 +88,23 @@ function addTestOutputBox() {
 }
 
 window.addEventListener('load', () => {
+    chrome.storage.local.get(['extensionEnabled'], (result) => {
+        const isEnabled = result.extensionEnabled || false;
+        let configDiv = document.querySelector('.field-configurator') as HTMLElement;
+        if (!isEnabled) {
+            configDiv.style.display = 'none';
+        }
+        updateContentUI(isEnabled);
+    });
+
     // Grundlegende Eingabefelder erkennen
     const fields = findBasicInputFields();
+
     fields.forEach((field, index) => {
-        field.style.border = "2px solid red";
+        //field.style.border = "2px solid red";
         const label = document.createElement('span');
         label.innerText = `Feld ${index + 1}`;
+        label.classList.add('content-ui-element');
         label.style.position = 'absolute';
         label.style.backgroundColor = 'yellow';
         label.style.color = 'black';
@@ -106,10 +122,17 @@ window.addEventListener('load', () => {
 
         field.addEventListener('contextmenu', (e) => {
             e.preventDefault();
-            openFieldConfigurator(field);
+            chrome.storage.local.get(['extensionEnabled'], (result) => {
+                const isEnabled = result.extensionEnabled || false;
+                const configElement = document.querySelector('.field-configurator') as HTMLElement;
+                const configShown = configElement?.style.display === 'block' ? true : false;
+                if (isEnabled && !configShown) {
+                    openFieldConfigurator(field);
+                }
+            });
         });
 
-        field.addEventListener('input', () => validateField(field));
+        //field.addEventListener('input', () => validateField(field));
     });
 
     updateFieldCountOverlay(fields.length);
@@ -121,3 +144,21 @@ window.addEventListener('load', () => {
     // Testausgabe-Fenster hinzufügen
     addTestOutputBox();
 });
+
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (changes.extensionEnabled) {
+        const newValue = changes.extensionEnabled.newValue;
+        updateContentUI(newValue);
+    }
+});
+
+function updateContentUI(isEnabled: boolean) {
+    const uiElements = document.querySelectorAll('.content-ui-element');
+    uiElements.forEach(element => {
+        if (isEnabled) {
+            (element as HTMLElement).style.display = 'block';
+        } else {
+            (element as HTMLElement).style.display = 'none';
+        }
+    });
+}

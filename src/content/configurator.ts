@@ -2,6 +2,8 @@ import { generatePlaywrightTests } from "./playwrightGenerator";
 import { fieldRules } from './fieldRulesStore';
 import { FieldConstraints } from '../types/fieldTypes';
 
+let rulesContainer: HTMLDivElement;
+
 function saveFieldRulesToLocalStorage() {
     const rules = Array.from(fieldRules.entries()).reduce((acc, [field, constraintsArray]) => {
         const key = field.name || field.id;
@@ -27,7 +29,7 @@ function loadFieldRulesFromLocalStorage() {
 }
 
 function displayFieldRules(field: HTMLInputElement) {
-    const rulesContainer = document.createElement('div');
+    rulesContainer = document.createElement('div');
     rulesContainer.style.border = '1px solid #e0e0e0';
     rulesContainer.style.borderRadius = '8px';
     rulesContainer.style.padding = '15px';
@@ -119,10 +121,11 @@ function findSubmitButton() {
     return 'nicht definiert';
 }
 
-export function openFieldConfigurator(field: HTMLInputElement) {
-    const submitButtonId = findSubmitButton();
+let configDiv: HTMLDivElement;
 
-    const configDiv = document.createElement('div');
+export function initializeConfigDiv() {
+    configDiv = document.createElement('div');
+    configDiv.classList.add('field-configurator', 'content-ui-element');
     configDiv.style.position = 'absolute';
     configDiv.style.top = '50%';
     configDiv.style.left = '50%';
@@ -137,9 +140,10 @@ export function openFieldConfigurator(field: HTMLInputElement) {
     configDiv.style.width = '100%';
     configDiv.style.fontFamily = 'Arial, sans-serif';
     configDiv.style.color = '#333';
+    configDiv.style.display = 'none';
 
     configDiv.innerHTML = `
-        <h3 style="text-align: center; margin-bottom: 20px; color: #4CAF50;">Feld-Konfiguration für ${field.id || field.name}</h3>
+        <h3 id="config-title" style="text-align: center; margin-bottom: 20px; color: #4CAF50;"></h3>
         <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
             <button id="tab-create-test" style="padding: 10px; cursor: pointer;">Test erstellen</button>
             <button id="tab-saved-tests" style="padding: 10px; cursor: pointer;">Gespeicherte Tests</button>
@@ -147,7 +151,7 @@ export function openFieldConfigurator(field: HTMLInputElement) {
         <div id="create-test-tab" style="margin-top: 20px;">
             <div style="margin-bottom: 20px; display: flex; align-items: center;">
                 <label style="margin-right: 10px;">Submit-Button ID: </label>
-                <input type="text" id="submit-button-id" value="${submitButtonId}" style="width: 200px; padding: 5px;"/>
+                <input type="text" id="submit-button-id" style="width: 200px; padding: 5px;"/>
             </div>
             <label>Testtyp:</label>
             <select id="field-type" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc;">
@@ -192,6 +196,33 @@ export function openFieldConfigurator(field: HTMLInputElement) {
 
     document.body.appendChild(configDiv);
 
+    configDiv.querySelector('#cancel-config')?.addEventListener('click', () => {
+        if (configDiv.contains(rulesContainer)) {
+            configDiv.removeChild(rulesContainer);
+        }
+        configDiv.style.display = 'none';
+    });
+}
+
+export function openFieldConfigurator(field: HTMLInputElement) {
+    initializeConfigDiv();
+    // Überprüfen, ob bereits ein Konfigurator geöffnet ist
+    if (configDiv.style.display === 'block') {
+        console.log('Ein Konfigurator ist bereits geöffnet. Schließe den bestehenden Konfigurator.');
+        configDiv.style.display = 'none';
+    }
+
+    // Aktualisiere die Felddaten im Konfigurator
+    const submitButtonId = findSubmitButton();
+    const configTitle = configDiv.querySelector('#config-title') as HTMLElement;
+    configTitle.textContent = `Feld-Konfiguration für ${field.id || field.name}`;
+    const submitButtonInput = configDiv.querySelector('#submit-button-id') as HTMLInputElement;
+    submitButtonInput.value = submitButtonId;
+
+    // Zeige den Konfigurator an
+    configDiv.style.display = 'block';
+
+    // Weitere Logik für die Konfiguration
     const tabCreateTest = configDiv.querySelector('#tab-create-test') as HTMLElement;
     const tabSavedTests = configDiv.querySelector('#tab-saved-tests') as HTMLElement;
     const createTestTab = configDiv.querySelector('#create-test-tab') as HTMLElement;
@@ -205,13 +236,15 @@ export function openFieldConfigurator(field: HTMLInputElement) {
     const invalidMessageConfig = configDiv.querySelector('#invalid-message-config') as HTMLElement;
 
     tabCreateTest.addEventListener('click', () => {
+        if (configDiv.contains(rulesContainer)) {
+            configDiv.removeChild(rulesContainer);
+        }
         createTestTab.style.display = 'block';
         savedTestsTab.style.display = 'none';
-        configDiv.removeChild(rulesContainer);
     });
 
-    function handleTabSavedTestsClick() {
-        if (savedTestsTab.style.display === 'block') {
+    tabSavedTests.addEventListener('click', () => {
+        if (configDiv.contains(rulesContainer)) {
             configDiv.removeChild(rulesContainer);
         }
         loadFieldRulesFromLocalStorage();
@@ -221,17 +254,15 @@ export function openFieldConfigurator(field: HTMLInputElement) {
         const buttonContainer = createButtonContainer();
         configDiv.appendChild(rulesContainer);
         configDiv.appendChild(buttonContainer);
-    }
+    });
 
-    function createButtonContainer() {
+    function createButtonContainer(): HTMLDivElement {
         const buttonContainer = document.createElement('div');
         buttonContainer.style.textAlign = 'center';
         buttonContainer.appendChild(configDiv.querySelector('#generate-tests') as HTMLElement);
         buttonContainer.appendChild(configDiv.querySelector('#cancel-config') as HTMLElement);
         return buttonContainer;
     }
-
-    tabSavedTests.addEventListener('click', handleTabSavedTestsClick);
 
     testTypeSelect.addEventListener('change', () => {
         const selectedType = testTypeSelect.value;
@@ -299,13 +330,19 @@ export function openFieldConfigurator(field: HTMLInputElement) {
         }
 
         if (constraints) {
-            if (!fieldRules.has(field)) {
-                fieldRules.set(field, []);
+            const fieldKey = field.id || field.name;
+            if (!fieldKey) {
+                console.error('Feld hat keine ID oder Name, Regel kann nicht gespeichert werden.');
+                return;
             }
-            const existingRules = fieldRules.get(field) || [];
+
+            let existingRules = fieldRules.get(field);
+            if (!existingRules) {
+                existingRules = [];
+                fieldRules.set(field, existingRules);
+            }
             console.log('fieldRules.get(field):', fieldRules.get(field));
             existingRules.push(constraints);
-            fieldRules.set(field, existingRules);
         }
 
         saveFieldRulesToLocalStorage();
@@ -314,14 +351,4 @@ export function openFieldConfigurator(field: HTMLInputElement) {
     configDiv.querySelector('#generate-tests')?.addEventListener('click', () => {
         generatePlaywrightTests(field);
     });
-
-    configDiv.querySelector('#cancel-config')?.addEventListener('click', () => {
-        document.body.removeChild(configDiv);
-    });
-
-    // Laden der Regeln beim Öffnen des Konfigurators
-    loadFieldRulesFromLocalStorage();
-
-    var rulesContainer = displayFieldRules(field);
-
 }
