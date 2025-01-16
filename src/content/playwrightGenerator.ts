@@ -11,21 +11,22 @@ export function generatePlaywrightTests(field: HTMLInputElement) {
     let testCode = `import { test, expect } from '@playwright/test';\n\n`;
 
     rules.forEach(rule => {
+        const additionalFill = generateAdditionalFill(field);
         switch (rule.type) {
             case 'number':
-                testCode += generateNumberTests(fieldId, field, rule);
+                testCode += generateNumberTests(fieldId, field, rule, additionalFill, false);
                 break;
             case 'string':
-                testCode += generateStringTests(fieldId, field, rule);
+                testCode += generateStringTests(fieldId, field, rule, additionalFill, false);
                 break;
             case 'validValues':
-                testCode += generateValidValuesTests(fieldId, field, rule);
+                testCode += generateValidValuesTests(fieldId, field, rule, additionalFill, false);
                 break;
             case 'invalidValues':
-                testCode += generateInvalidValuesTests(fieldId, field, rule);
+                testCode += generateInvalidValuesTests(fieldId, field, rule, additionalFill, false);
                 break;
             case 'checkbox':
-                testCode += generateCheckboxTests(fieldId, field, rule);
+                testCode += generateCheckboxTests(fieldId, field, rule, additionalFill, false);
                 break;
         }
     });
@@ -36,9 +37,9 @@ export function generatePlaywrightTests(field: HTMLInputElement) {
     }
 }
 
-function generateTestCode(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, testType: string, values: number[] | string[], invalidValues: number[] | string[], additionalFill?: string) {
+function generateTestCode(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, testType: string, values: number[] | string[], invalidValues: number[] | string[], additionalFill: string, comprehensive: boolean) {
     let testCode = '';
-    if (!additionalFill) {
+    if (!comprehensive) {
         testCode += `\ntest('${testType} ${fieldId}', async ({ page }) => {\n`;
     }
 
@@ -46,54 +47,54 @@ function generateTestCode(fieldId: string, field: HTMLInputElement, rule: FieldC
 
     // Positive Tests
     values.forEach(value => {
-        testCode += `\n    await field${globalIndex}.fill('${value}');\n${additionalFill || ''}\n    await submitButton${globalIndex}.click();\n    await expect(page.locator('body')).toContainText('${rule.validMessage}');\n`;
+        testCode += `\n    // Positive test\n    await field${globalIndex}.fill('${value}');\n${additionalFill || ''}\n    await submitButton${globalIndex}.click();\n    await expect(page.locator('body')).toContainText('${rule.validMessage}');\n`;
     });
 
     // Negative Tests
     invalidValues.forEach(invalidValue => {
-        testCode += `\n    await field${globalIndex}.fill('${invalidValue}');\n${additionalFill || ''}\n    await submitButton${globalIndex}.click();\n    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');\n`;
+        testCode += `\n    // Negative test\n    await field${globalIndex}.fill('${invalidValue}');\n${additionalFill || ''}\n    await submitButton${globalIndex}.click();\n    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');\n`;
     });
 
-    if (!additionalFill) {
+    if (!comprehensive) {
         testCode += `\n});\n`;
     }
     globalIndex++;
     return testCode;
 }
 
-function generateNumberTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill?: string) {
+function generateNumberTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
     if (rule.min !== undefined && rule.max !== undefined) {
-        return generateTestCode(fieldId, field, rule, 'Zahlenfeld', [rule.min, rule.max, rule.min + 1, rule.max - 1], [rule.min - 1, rule.max + 1], additionalFill);
+        return generateTestCode(fieldId, field, rule, 'Zahlenfeld', [rule.min, rule.max, rule.min + 1, rule.max - 1], [rule.min - 1, rule.max + 1], additionalFill, comprehensive);
     }
     return '';
 }
 
-function generateStringTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill?: string) {
+function generateStringTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
     if (rule.min !== undefined && rule.max !== undefined) {
-        return generateTestCode(fieldId, field, rule, 'Textfeld', ['a'.repeat(rule.min), 'a'.repeat(rule.max), 'a'.repeat(rule.min + 1), 'a'.repeat(rule.max - 1)], ['a'.repeat(rule.min - 1), 'a'.repeat(rule.max + 1)], additionalFill);
+        return generateTestCode(fieldId, field, rule, 'Textfeld', ['a'.repeat(rule.min), 'a'.repeat(rule.max), 'a'.repeat(rule.min + 1), 'a'.repeat(rule.max - 1)], ['a'.repeat(rule.min - 1), 'a'.repeat(rule.max + 1)], additionalFill, comprehensive);
     }
     return '';
 }
 
-function generateValidValuesTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill?: string) {
+function generateValidValuesTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
     if (rule.validValues && rule.validValues.length > 0) {
         const dummyValues = ['dummy1', 'dummy2', 'dummy3'];
-        return generateTestCode(fieldId, field, rule, 'Gültige Werte', rule.validValues, dummyValues, additionalFill);
+        return generateTestCode(fieldId, field, rule, 'Gültige Werte', rule.validValues, dummyValues, additionalFill, comprehensive);
     }
     return '';
 }
 
-function generateInvalidValuesTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill?: string) {
+function generateInvalidValuesTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
     if (rule.invalidValues && rule.invalidValues.length > 0) {
         const dummyValues = ['dummy1', 'dummy2', 'dummy3'];
-        return generateTestCode(fieldId, field, rule, 'Ungültige Werte', rule.invalidValues, dummyValues, additionalFill);
+        return generateTestCode(fieldId, field, rule, 'Ungültige Werte', rule.invalidValues, dummyValues, additionalFill, comprehensive);
     }
     return '';
 }
 
-function generateCheckboxTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill?: string) {
+function generateCheckboxTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
     let testCode = '';
-    if (!additionalFill) {
+    if (!comprehensive) {
         testCode += `
 test('Checkbox ${fieldId}', async ({ page }) => {
 `
@@ -116,7 +117,7 @@ ${additionalFill || ''}
     await submitButton${globalIndex}.click();
     await expect(page.locator('body')).toContainText('${rule.required ? rule.invalidMessage : rule.validMessage}');
 `;
-    if (!additionalFill) {
+    if (!comprehensive) {
         testCode += `
 });
 `;
@@ -145,6 +146,21 @@ function generateValidValue(rule: FieldConstraints): string {
     }
 }
 
+function generateAdditionalFill(currentField: HTMLInputElement): string {
+    let additionalFill = '';
+    fieldRules.forEach((rules, field) => {
+        if (field !== currentField) {
+            if (rules[0].type === 'checkbox') {
+                additionalFill += `    await page.check('input[id="${field.id}"]');\n`;
+            } else {
+                const validValue = generateValidValue(rules[0]); // Nimm die erste Regel an
+                additionalFill += `    await page.fill('input[id="${field.id}"]', '${validValue}');\n`;
+            }
+        }
+    });
+    return additionalFill;
+}
+
 export function generateComprehensiveTest() {
     let testCode = `import { test, expect } from '@playwright/test';\n\n`;
     testCode += `
@@ -156,35 +172,22 @@ export function generateComprehensiveTest() {
         const fieldId = field.id || field.name || 'unbenanntes Feld';
 
         rules.forEach(rule => {
-            // Fülle alle anderen Felder mit validen Werten
-            let additionalFill = '';
-            fieldRules.forEach((otherRules, otherField) => {
-                if (otherField !== field) {
-                    if (otherRules[0].type === 'checkbox') {
-                        additionalFill += `    await page.check('input[id="${otherField.id}"]');\n`;
-                    } else {
-                        const validValue = generateValidValue(otherRules[0]); // Nimm die erste Regel an
-                        additionalFill += `    await page.fill('input[id="${otherField.id}"]', '${validValue}');\n`;
-                    }
-                }
-            });
-
-            // Generiere Tests für das aktuelle Feld
+            const additionalFill = generateAdditionalFill(field);
             switch (rule.type) {
                 case 'number':
-                    testCode += generateNumberTests(fieldId, field, rule, additionalFill);
+                    testCode += generateNumberTests(fieldId, field, rule, additionalFill, true);
                     break;
                 case 'string':
-                    testCode += generateStringTests(fieldId, field, rule, additionalFill);
+                    testCode += generateStringTests(fieldId, field, rule, additionalFill, true);
                     break;
                 case 'validValues':
-                    testCode += generateValidValuesTests(fieldId, field, rule, additionalFill);
+                    testCode += generateValidValuesTests(fieldId, field, rule, additionalFill, true);
                     break;
                 case 'invalidValues':
-                    testCode += generateInvalidValuesTests(fieldId, field, rule, additionalFill);
+                    testCode += generateInvalidValuesTests(fieldId, field, rule, additionalFill, true);
                     break;
                 case 'checkbox':
-                    testCode += generateCheckboxTests(fieldId, field, rule, additionalFill);
+                    testCode += generateCheckboxTests(fieldId, field, rule, additionalFill, true);
                     break;
             }
         });
