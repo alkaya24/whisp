@@ -124,7 +124,7 @@ function findSubmitButton() {
 let configDiv: HTMLDivElement;
 let initialized = false;
 
-export function initializeConfigDiv() {
+export function setupConfiguratorUI() {
     if (!initialized) { return; }
     configDiv = document.createElement('div');
     configDiv.classList.add('field-configurator', 'content-ui-element');
@@ -196,30 +196,36 @@ export function initializeConfigDiv() {
     document.body.appendChild(configDiv);
 }
 
-export function openFieldConfigurator(field: HTMLInputElement) {
-    // Überprüfen, ob bereits ein Konfigurator geöffnet ist
-    // if (configDiv.style.display === 'block') {
-    //     console.log('Ein Konfigurator ist bereits geöffnet. Schließe den bestehenden Konfigurator.');
-    //     configDiv.style.display = 'none';
-    // }
-    if (!initialized) {
-        initialized = true;
-    }
-    initializeConfigDiv();
+function createButtonContainer(): HTMLDivElement {
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.textAlign = 'center';
+    const generateTestsButton = document.createElement('button');
+    generateTestsButton.id = 'generate-tests';
+    generateTestsButton.style.padding = '10px 20px';
+    generateTestsButton.style.backgroundColor = '#2196F3';
+    generateTestsButton.style.color = 'white';
+    generateTestsButton.style.border = 'none';
+    generateTestsButton.style.borderRadius = '5px';
+    generateTestsButton.style.cursor = 'pointer';
+    generateTestsButton.innerText = 'Tests für dieses Feld generieren';
 
-    // Aktualisiere die Felddaten im Konfigurator
-    const submitButtonId = findSubmitButton();
-    const configTitle = configDiv.querySelector('#config-title') as HTMLElement;
-    configTitle.textContent = `Feld-Konfiguration für ${field.id || field.name}`;
-    const submitButtonInput = configDiv.querySelector('#submit-button-id') as HTMLInputElement;
-    submitButtonInput.value = submitButtonId;
+    const cancelButton = document.createElement('button');
+    cancelButton.id = 'cancel-config';
+    cancelButton.style.padding = '10px 20px';
+    cancelButton.style.backgroundColor = '#f44336';
+    cancelButton.style.color = 'white';
+    cancelButton.style.border = 'none';
+    cancelButton.style.borderRadius = '5px';
+    cancelButton.style.cursor = 'pointer';
+    cancelButton.innerText = 'Abbrechen';
 
-    // Zeige den Konfigurator an
-    configDiv.style.display = 'block';
-    const buttonContainer = createButtonContainer();
-    configDiv.appendChild(buttonContainer);
+    buttonContainer.appendChild(generateTestsButton);
+    buttonContainer.appendChild(cancelButton);
+    return buttonContainer;
+}
 
-    // Weitere Logik für die Konfiguration
+
+function setupConfiguratorEventListeners(field: HTMLInputElement) {
     const tabCreateTest = configDiv.querySelector('#tab-create-test') as HTMLElement;
     const tabSavedTests = configDiv.querySelector('#tab-saved-tests') as HTMLElement;
     const createTestTab = configDiv.querySelector('#create-test-tab') as HTMLElement;
@@ -248,36 +254,10 @@ export function openFieldConfigurator(field: HTMLInputElement) {
         rulesContainer = displayFieldRules(field);
         createTestTab.style.display = 'none';
         savedTestsTab.style.display = 'block';
-        configDiv.insertBefore(rulesContainer, buttonContainer);
+        if (savedTestsTab.parentNode) {
+            savedTestsTab.parentNode.insertBefore(rulesContainer, savedTestsTab.nextSibling);
+        }
     });
-
-    function createButtonContainer(): HTMLDivElement {
-        const buttonContainer = document.createElement('div');
-        buttonContainer.style.textAlign = 'center';
-        const generateTestsButton = document.createElement('button');
-        generateTestsButton.id = 'generate-tests';
-        generateTestsButton.style.padding = '10px 20px';
-        generateTestsButton.style.backgroundColor = '#2196F3';
-        generateTestsButton.style.color = 'white';
-        generateTestsButton.style.border = 'none';
-        generateTestsButton.style.borderRadius = '5px';
-        generateTestsButton.style.cursor = 'pointer';
-        generateTestsButton.innerText = 'Tests für dieses Feld generieren';
-
-        const cancelButton = document.createElement('button');
-        cancelButton.id = 'cancel-config';
-        cancelButton.style.padding = '10px 20px';
-        cancelButton.style.backgroundColor = '#f44336';
-        cancelButton.style.color = 'white';
-        cancelButton.style.border = 'none';
-        cancelButton.style.borderRadius = '5px';
-        cancelButton.style.cursor = 'pointer';
-        cancelButton.innerText = 'Abbrechen';
-
-        buttonContainer.appendChild(generateTestsButton);
-        buttonContainer.appendChild(cancelButton);
-        return buttonContainer;
-    }
 
     testTypeSelect.addEventListener('change', () => {
         const selectedType = testTypeSelect.value;
@@ -374,3 +354,27 @@ export function openFieldConfigurator(field: HTMLInputElement) {
         configDiv.style.display = 'none';
     });
 }
+
+export function openFieldConfigurator(field: HTMLInputElement) {
+    if (!initialized) {
+        initialized = true;
+    }
+    setupConfiguratorUI();
+    const buttonContainer = createButtonContainer();
+    configDiv.appendChild(buttonContainer);
+    setupConfiguratorEventListeners(field);
+
+    // Aktualisiere die Felddaten im Konfigurator
+    const submitButtonId = findSubmitButton();
+    const configTitle = configDiv.querySelector('#config-title') as HTMLElement;
+    configTitle.textContent = `Feld-Konfiguration für ${field.id || field.name}`;
+    const submitButtonInput = configDiv.querySelector('#submit-button-id') as HTMLInputElement;
+    submitButtonInput.value = submitButtonId;
+
+    // Zeige den Konfigurator an
+    configDiv.style.display = 'block';
+
+
+
+}
+

@@ -6,33 +6,30 @@ const toggleLabel = document.getElementById('toggle-label') as HTMLElement;
 const generateTestsButton = document.getElementById('generate-tests') as HTMLButtonElement;
 const message = document.getElementById('message') as HTMLElement;
 
-window.addEventListener('load', () => {
+function initializePopupUI() {
     // Lade den Status aus Chrome Storage
     chrome.storage.local.get(['extensionEnabled'], (result) => {
         const isEnabled = result.extensionEnabled || false;
         toggleExtension.checked = isEnabled;
         updateToggleUI(isEnabled);
     });
-});
+}
 
-toggleExtension.addEventListener('change', () => {
+function setupPopupEventListeners() {
+    toggleExtension.addEventListener('change', onToggleChange);
+    generateTestsButton.addEventListener('click', onGenerateTestsClick);
+}
+
+function onToggleChange() {
     const isEnabled = toggleExtension.checked;
 
     // Speichere den Status in Chrome Storage
     chrome.storage.local.set({ extensionEnabled: isEnabled });
 
     updateToggleUI(isEnabled); // UI aktualisieren
-});
-
-// UI basierend auf dem Status aktualisieren
-function updateToggleUI(isEnabled: boolean) {
-    toggleExtension.checked = isEnabled;
-    toggleLabel.textContent = isEnabled ? 'Extension aktiviert' : 'Extension deaktiviert';
-    generateTestsButton.style.display = isEnabled ? 'block' : 'none';
 }
 
-// Tests generieren
-generateTestsButton.addEventListener('click', () => {
+function onGenerateTestsClick() {
     console.log('generateTestsButton clicked');
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0].id) {
@@ -47,4 +44,15 @@ generateTestsButton.addEventListener('click', () => {
             });
         }
     });
-});
+}
+
+// UI basierend auf dem Status aktualisieren
+function updateToggleUI(isEnabled: boolean) {
+    toggleExtension.checked = isEnabled;
+    toggleLabel.textContent = isEnabled ? 'Extension aktiviert' : 'Extension deaktiviert';
+    generateTestsButton.style.display = isEnabled ? 'block' : 'none';
+}
+
+// Call the new functions
+initializePopupUI();
+setupPopupEventListeners();

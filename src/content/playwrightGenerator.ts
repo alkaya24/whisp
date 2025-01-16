@@ -36,211 +36,59 @@ export function generatePlaywrightTests(field: HTMLInputElement) {
     }
 }
 
-function generateNumberTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill?: string) {
+function generateTestCode(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, testType: string, values: number[] | string[], invalidValues: number[] | string[], additionalFill?: string) {
     let testCode = '';
-    if (rule.min !== undefined && rule.max !== undefined) {
-        if (!additionalFill) {
-            testCode += `
-test('Zahlenfeld ${fieldId}', async ({ page }) => {
-`
-        }
-        // const submitButton = await page.locator('${rule.submitButtonId}'); // Optionales Feature, um den richtigen Selector zu finden
+    if (!additionalFill) {
+        testCode += `\ntest('${testType} ${fieldId}', async ({ page }) => {\n`;
+    }
 
-        testCode += `
-    await page.goto('${window.location.href}');
-    const field${globalIndex} = await page.locator('input[id="${fieldId}"]');
-    const submitButton${globalIndex} = await page.locator('button[id="${rule.submitButtonId}"]');
+    testCode += `\n    await page.goto('${window.location.href}');\n    const field${globalIndex} = await page.locator('input[id="${fieldId}"]');\n    const submitButton${globalIndex} = await page.locator('button[id="${rule.submitButtonId}"]');\n`;
 
     // Positive Tests
-    await field${globalIndex}.fill('${rule.min}');
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.validMessage}');
-
-    await field${globalIndex}.fill('${rule.max}');
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.validMessage}');
-
-    await field${globalIndex}.fill('${rule.min + 1}');
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.validMessage}');
-
-    await field${globalIndex}.fill('${rule.max - 1}');
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.validMessage}');
+    values.forEach(value => {
+        testCode += `\n    await field${globalIndex}.fill('${value}');\n${additionalFill || ''}\n    await submitButton${globalIndex}.click();\n    await expect(page.locator('body')).toContainText('${rule.validMessage}');\n`;
+    });
 
     // Negative Tests
-    await field${globalIndex}.fill('${rule.min - 1}');
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
+    invalidValues.forEach(invalidValue => {
+        testCode += `\n    await field${globalIndex}.fill('${invalidValue}');\n${additionalFill || ''}\n    await submitButton${globalIndex}.click();\n    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');\n`;
+    });
 
-    await field${globalIndex}.fill('${rule.max + 1}');
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
-`;
-
-        if (!additionalFill) {
-            testCode += `
-});
-`;
-        }
-        globalIndex++;
+    if (!additionalFill) {
+        testCode += `\n});\n`;
     }
+    globalIndex++;
     return testCode;
+}
+
+function generateNumberTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill?: string) {
+    if (rule.min !== undefined && rule.max !== undefined) {
+        return generateTestCode(fieldId, field, rule, 'Zahlenfeld', [rule.min, rule.max, rule.min + 1, rule.max - 1], [rule.min - 1, rule.max + 1], additionalFill);
+    }
+    return '';
 }
 
 function generateStringTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill?: string) {
-    let testCode = '';
     if (rule.min !== undefined && rule.max !== undefined) {
-        if (!additionalFill) {
-            testCode += `
-test('Textfeld ${fieldId}', async ({ page }) => {
-`
-        }
-
-        testCode += `
-    await page.goto('${window.location.href}');
-    const field${globalIndex} = await page.locator('input[id="${fieldId}"]');
-    const submitButton${globalIndex} = await page.locator('button[id="${rule.submitButtonId}"]');
-
-
-    // Positive Tests
-    await field${globalIndex}.fill('a'.repeat(${rule.min}));
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.validMessage}');
-
-    await field${globalIndex}.fill('a'.repeat(${rule.max}));
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.validMessage}');
-
-    await field${globalIndex}.fill('a'.repeat(${rule.min + 1}));
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.validMessage}');
-
-    await field${globalIndex}.fill('a'.repeat(${rule.max - 1}));
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.validMessage}');
-
-    // Negative Tests
-    await field${globalIndex}.fill('a'.repeat(${rule.min - 1}));
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
-
-    await field${globalIndex}.fill('a'.repeat(${rule.max + 1}));
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
-`;
-
-        if (!additionalFill) {
-            testCode += `
-});
-`;
-        }
-        globalIndex++;
+        return generateTestCode(fieldId, field, rule, 'Textfeld', ['a'.repeat(rule.min), 'a'.repeat(rule.max), 'a'.repeat(rule.min + 1), 'a'.repeat(rule.max - 1)], ['a'.repeat(rule.min - 1), 'a'.repeat(rule.max + 1)], additionalFill);
     }
-    return testCode;
+    return '';
 }
 
 function generateValidValuesTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill?: string) {
-    let testCode = '';
     if (rule.validValues && rule.validValues.length > 0) {
-        if (!additionalFill) {
-            testCode += `
-test('Gültige Werte ${fieldId}', async ({ page }) => {
-`
-        }
-
-        testCode += `
-    await page.goto('${window.location.href}');
-    const field${globalIndex} = await page.locator('input[id="${fieldId}"]');
-    const submitButton${globalIndex} = await page.locator('button[id="${rule.submitButtonId}"]');
-
-`;
-        // Positive Tests
-        for (const value of rule.validValues) {
-            testCode += `
-    // Positive Tests
-    await field${globalIndex}.fill('${value}');
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.validMessage}');
-`;
-        }
-        // Negative Tests mit Dummy-Werten
         const dummyValues = ['dummy1', 'dummy2', 'dummy3'];
-        for (const value of dummyValues) {
-            testCode += `
-    // Negative Tests
-    await field${globalIndex}.fill('${value}');
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
-`;
-        }
-        if (!additionalFill) {
-            testCode += `
-});
-`;
-        }
-        globalIndex++;
+        return generateTestCode(fieldId, field, rule, 'Gültige Werte', rule.validValues, dummyValues, additionalFill);
     }
-    return testCode;
+    return '';
 }
 
 function generateInvalidValuesTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill?: string) {
-    let testCode = '';
     if (rule.invalidValues && rule.invalidValues.length > 0) {
-        if (!additionalFill) {
-            testCode += `
-test('Ungültige Werte ${fieldId}', async ({ page }) => {
-`
-        }
-
-        testCode += `
-    await page.goto('${window.location.href}');
-    const field${globalIndex} = await page.locator('input[id="${fieldId}"]');
-    const submitButton${globalIndex} = await page.locator('button[id="${rule.submitButtonId}"]');
-`;
-        // Positive Tests
-        for (const value of rule.invalidValues) {
-            testCode += `
-    // Positive Tests
-    await field${globalIndex}.fill('${value}');
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.validMessage}');
-`;
-        }
-        // Negative Tests mit Dummy-Werten
         const dummyValues = ['dummy1', 'dummy2', 'dummy3'];
-        for (const value of dummyValues) {
-            testCode += `
-    // Negative Tests
-    await field${globalIndex}.fill('${value}');
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');
-`;
-        }
-        if (!additionalFill) {
-            testCode += `
-});
-`;
-        }
-        globalIndex++;
+        return generateTestCode(fieldId, field, rule, 'Ungültige Werte', rule.invalidValues, dummyValues, additionalFill);
     }
-    return testCode;
+    return '';
 }
 
 function generateCheckboxTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill?: string) {
