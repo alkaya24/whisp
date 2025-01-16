@@ -104,25 +104,51 @@
         <textarea id="textarea" name="textarea" rows="5" placeholder="Geben Sie Ihren Text ein"></textarea>
 
         <button type="button" id="submit-button">Abschicken</button>
-        <p class="success-message" id="success-message">Formular wurde erfolgreich abgeschickt!</p>
-        <p class="error-message" id="error-message">Das Passwort ist falsch!</p>
+        <p class="success-message" id="success-message"></p>
+        <p class="error-message" id="error-message"></p>
     </form>
 
     <script>
         document.getElementById('submit-button').addEventListener('click', function () {
+            const textField = document.getElementById('text-field');
+            const emailField = document.getElementById('email-field');
             const passwordField = document.getElementById('password-field');
+            const numberField = document.getElementById('number-field');
+            const checkbox1 = document.getElementById('checkbox-1');
             const errorMessage = document.getElementById('error-message');
             const successMessage = document.getElementById('success-message');
 
-            // Überprüfen, ob das Passwort korrekt ist
-            if (passwordField.value === 'formularflüsterer') {
+            let errors = [];
+
+            // Überprüfen, ob Felder nicht leer sind
+            if (!textField.value || !emailField.value || !passwordField.value || !numberField.value) errors.push('Felder dürfen nicht leer sein');
+
+            // Spezifische Validierungen
+            if (textField.value.length < 5 || textField.value.length > 10) {
+                errors.push('text-field: Zeichenlänge muss zwischen 5-10 sein');
+            }
+            if (emailField.value === 'Boesermann@gmx.de') {
+                errors.push('email-field: Email nicht erlaubt');
+            }
+            if (passwordField.value !== 'formularflüsterer') {
+                errors.push('Falsches Passwort');
+            }
+            if (numberField.value < 100 || numberField.value > 130) {
+                errors.push('number-field: Zahl muss zwischen 100 und 130 liegen');
+            }
+            if (!checkbox1.checked) {
+                errors.push('checkbox-1 muss aktiviert sein');
+            }
+
+            // Fehlermeldungen anzeigen
+            if (errors.length > 0) {
+                errorMessage.innerHTML = errors.join('<br>');
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+            } else {
+                successMessage.textContent = 'Formular erfolgreich gesendet';
                 successMessage.style.display = 'block';
                 errorMessage.style.display = 'none';
-                // Hier könntest du das Formular abschicken oder andere Logik implementieren
-                // document.getElementById('test-form').submit();
-            } else {
-                successMessage.style.display = 'none';
-                errorMessage.style.display = 'block';
             }
         });
     </script>

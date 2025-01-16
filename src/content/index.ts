@@ -1,7 +1,6 @@
 import { findBasicInputFields, findCheckboxes, labelAndCountCheckboxes } from './detectFields';
-import { openFieldConfigurator, initializeConfigDiv } from './configurator';
+import { openFieldConfigurator, initializeConfigDiv, loadFieldRulesFromLocalStorage } from './configurator';
 import { validateField } from './validation';
-import { generatePlaywrightTests } from './playwrightGenerator';
 
 // Initialisiere das Konfigurator-Element beim Laden des Skripts
 initializeConfigDiv();
@@ -48,6 +47,8 @@ function addTestOutputBox() {
     // Box für generierte Tests
     const outputBox = document.createElement('div');
     outputBox.id = 'test-output';
+    outputBox.classList.add('content-ui-element');
+    outputBox.style.display = 'block';
     outputBox.style.height = '200px';
     outputBox.style.overflowY = 'auto';
     outputBox.style.whiteSpace = 'pre-wrap';
@@ -141,6 +142,7 @@ window.addEventListener('load', () => {
     const checkboxes = findCheckboxes();
     labelAndCountCheckboxes(checkboxes);
 
+    loadFieldRulesFromLocalStorage();
     // Testausgabe-Fenster hinzufügen
     addTestOutputBox();
 });
@@ -152,7 +154,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     }
 });
 
-function updateContentUI(isEnabled: boolean) {
+export function updateContentUI(isEnabled: boolean) {
     const uiElements = document.querySelectorAll('.content-ui-element');
     uiElements.forEach(element => {
         if (isEnabled) {
