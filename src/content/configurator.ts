@@ -2,6 +2,7 @@ import { generatePlaywrightTests } from "./playwrightGenerator";
 import { fieldRules } from './fieldRulesStore';
 import { FieldConstraints } from '../types/fieldTypes';
 
+export let configShown = false;
 let rulesContainer: HTMLDivElement;
 
 function saveFieldRulesToLocalStorage() {
@@ -352,6 +353,7 @@ function setupConfiguratorEventListeners(field: HTMLInputElement) {
             configDiv.removeChild(rulesContainer);
         }
         configDiv.style.display = 'none';
+        configShown = false;
     });
 }
 
@@ -373,8 +375,5 @@ export function openFieldConfigurator(field: HTMLInputElement) {
 
     // Zeige den Konfigurator an
     configDiv.style.display = 'block';
-
-
-
+    configShown = true;
 }
-

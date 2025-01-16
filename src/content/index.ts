@@ -1,5 +1,5 @@
 import { findBasicInputFields, findCheckboxes, labelAndCountCheckboxes } from './detectFields';
-import { openFieldConfigurator, setupConfiguratorUI, loadFieldRulesFromLocalStorage } from './configurator';
+import { openFieldConfigurator, setupConfiguratorUI, loadFieldRulesFromLocalStorage, configShown } from './configurator';
 import { validateField } from './validation';
 
 function initializeUI() {
@@ -50,8 +50,6 @@ function onWindowLoad() {
             e.preventDefault();
             chrome.storage.local.get(['extensionEnabled'], (result) => {
                 const isEnabled = result.extensionEnabled || false;
-                const configElement = document.querySelector('.field-configurator') as HTMLElement;
-                const configShown = configElement?.style.display === 'block' ? true : false;
                 if (isEnabled && !configShown) {
                     openFieldConfigurator(field);
                 }
