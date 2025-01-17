@@ -1,17 +1,20 @@
 import { isVisible } from '../utils/domUtils';
 
+// Findet alle grundlegenden Eingabefelder, die sichtbar sind und keine bestimmten Typen haben
 export function findBasicInputFields(): HTMLInputElement[] {
     return Array.from(
         document.querySelectorAll("input:not([type='hidden']):not([type='radio']):not([type='button']):not([type='submit'])")
     ).filter((el): el is HTMLInputElement => el instanceof HTMLInputElement && isVisible(el));
 }
 
+// Findet alle sichtbaren Checkboxen auf der Seite
 export function findCheckboxes(): HTMLInputElement[] {
     return Array.from(
         document.querySelectorAll("input[type='checkbox']")
     ).filter((el): el is HTMLInputElement => el instanceof HTMLInputElement && isVisible(el));
 }
 
+// Fügt Labels zu den Checkboxen hinzu und zählt sie
 export function labelAndCountCheckboxes(checkboxes: HTMLInputElement[]) {
     const fragment = document.createDocumentFragment();
     checkboxes.forEach((checkbox, index) => {
@@ -44,6 +47,7 @@ export function labelAndCountCheckboxes(checkboxes: HTMLInputElement[]) {
     updateCheckboxCountOverlay(checkboxes.length);
 }
 
+// Aktualisiert das Overlay, das die Anzahl der erkannten Checkboxen anzeigt
 function updateCheckboxCountOverlay(count: number) {
     let overlay = document.getElementById('checkbox-count-overlay') as HTMLElement;
 

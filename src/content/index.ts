@@ -2,17 +2,19 @@ import { findBasicInputFields, findCheckboxes, labelAndCountCheckboxes } from '.
 import { openFieldConfigurator, setupConfiguratorUI, loadFieldRulesFromLocalStorage, configShown } from './configurator';
 import { validateField } from './validation';
 
+// Initialisiert die Benutzeroberfläche, indem das Konfigurator-Element und die Testausgabebox hinzugefügt werden
 function initializeUI() {
-    // Initialisiere das Konfigurator-Element beim Laden des Skripts
     setupConfiguratorUI();
     addTestOutputBox();
 }
 
+// Setzt die Event-Listener für das Laden des Fensters und Änderungen im Chrome-Speicher
 function setupEventListeners() {
     window.addEventListener('load', onWindowLoad);
     chrome.storage.onChanged.addListener(onStorageChange);
 }
 
+// Wird beim Laden des Fensters aufgerufen, um den Status der Erweiterung zu überprüfen und die UI entsprechend zu aktualisieren
 function onWindowLoad() {
     chrome.storage.local.get(['extensionEnabled'], (result) => {
         if (chrome.runtime.lastError) {
@@ -27,14 +29,14 @@ function onWindowLoad() {
         updateContentUI(isEnabled);
     });
 
-    // Grundlegende Eingabefelder erkennen
+    // Erkennen und Labeln der grundlegenden Eingabefelder
     const fields = findBasicInputFields();
 
     fields.forEach((field, index) => {
-        //field.style.border = "2px solid red";
         const label = createFieldLabel(index, field);
         document.body.appendChild(label);
 
+        // Kontextmenü-Event-Listener, um den Konfigurator zu öffnen, wenn die Erweiterung aktiviert ist
         field.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             chrome.storage.local.get(['extensionEnabled'], (result) => {
@@ -52,12 +54,14 @@ function onWindowLoad() {
         //field.addEventListener('input', () => validateField(field));
     });
 
+    // Aktualisiert das Overlay mit der Anzahl der erkannten Felder
     updateFieldCountOverlay(fields.length);
 
-    // Checkboxen erkennen und zählen
+    // Erkennen und Zählen der Checkboxen
     const checkboxes = findCheckboxes();
     labelAndCountCheckboxes(checkboxes);
 
+    // Lädt die gespeicherten Feldregeln aus dem lokalen Speicher
     loadFieldRulesFromLocalStorage();
 }
 
@@ -90,6 +94,7 @@ function updateFieldCountOverlay(count: number) {
     overlay.innerText = `Erkannte Felder: ${count}`;
 }
 
+// Fügt eine Box zur Anzeige der generierten Tests hinzu
 function addTestOutputBox() {
     const outputContainer = document.createElement('div');
     outputContainer.id = 'test-output-container';
@@ -118,6 +123,7 @@ function addTestOutputBox() {
     outputBox.style.marginBottom = '10px';
     outputContainer.appendChild(outputBox);
 
+    // Button zum Kopieren der generierten Tests
     const copyButton = document.createElement('button');
     copyButton.innerText = 'Tests kopieren';
     copyButton.style.display = 'block';
@@ -131,6 +137,7 @@ function addTestOutputBox() {
     copyButton.style.cursor = 'pointer';
     copyButton.style.textAlign = 'center';
 
+    // Event-Listener zum Kopieren der Tests in die Zwischenablage
     copyButton.addEventListener('click', () => {
         const outputContent = document.getElementById('test-output')?.textContent || '';
         if (outputContent.trim() === '') {
@@ -151,12 +158,13 @@ function addTestOutputBox() {
     document.body.appendChild(outputContainer);
 }
 
+// Erstellt ein Label für ein Eingabefeld
 function createFieldLabel(index: number, field: Element): HTMLSpanElement {
     const label = document.createElement('span');
     label.innerText = `Feld ${index + 1}`;
     label.classList.add('content-ui-element');
 
-    // Apply styles
+    // Stile für das Label anwenden
     Object.assign(label.style, {
         position: 'absolute',
         backgroundColor: 'yellow',
@@ -168,7 +176,7 @@ function createFieldLabel(index: number, field: Element): HTMLSpanElement {
         zIndex: '1000'
     });
 
-    // Position the label
+    // Positioniere das Label relativ zum Eingabefeld
     const rect = field.getBoundingClientRect();
     label.style.top = `${window.scrollY + rect.top - 20}px`;
     label.style.left = `${window.scrollX + rect.left}px`;
@@ -176,6 +184,7 @@ function createFieldLabel(index: number, field: Element): HTMLSpanElement {
     return label;
 }
 
+// Aktualisiert die Sichtbarkeit der UI-Elemente basierend auf dem Aktivierungsstatus der Erweiterung
 export function updateContentUI(isEnabled: boolean) {
     const uiElements = document.querySelectorAll('.content-ui-element');
     uiElements.forEach(element => {
@@ -187,6 +196,6 @@ export function updateContentUI(isEnabled: boolean) {
     });
 }
 
-// Call the new functions
+// Initialisiert die UI und setzt die Event-Listener
 initializeUI();
 setupEventListeners();

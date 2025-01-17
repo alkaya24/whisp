@@ -2,13 +2,16 @@ import { generatePlaywrightTests } from "./playwrightGenerator";
 import { fieldRules } from './fieldRulesStore';
 import { FieldConstraints } from '../types/fieldTypes';
 
+// Definiere die Selektoren für die Suche nach Submit-Buttons
 const SELECTORS = ['button[type="submit"]', 'input[type="submit"]', 'button[id="submit"]', 'button[id="submit-button"]', 'button.submit', 'input.submit'];
 export let configShown: boolean = false;
 let rulesContainer: HTMLDivElement;
 let configDiv: HTMLDivElement;
 let initialized: boolean = false;
 
+// Setzt Event-Listener für den Konfigurator
 function setupConfiguratorEventListeners(field: HTMLInputElement) {
+    // Elemente im Konfigurator-UI
     const tabCreateTest = configDiv.querySelector('#tab-create-test') as HTMLElement;
     const tabSavedTests = configDiv.querySelector('#tab-saved-tests') as HTMLElement;
     const createTestTab = configDiv.querySelector('#create-test-tab') as HTMLElement;
@@ -21,6 +24,7 @@ function setupConfiguratorEventListeners(field: HTMLInputElement) {
     const validMessageConfig = configDiv.querySelector('#valid-message-config') as HTMLElement;
     const invalidMessageConfig = configDiv.querySelector('#invalid-message-config') as HTMLElement;
 
+    // Event-Listener für das Erstellen von Tests
     tabCreateTest.addEventListener('click', () => {
         if (configDiv.contains(rulesContainer)) {
             configDiv.removeChild(rulesContainer);
@@ -29,6 +33,7 @@ function setupConfiguratorEventListeners(field: HTMLInputElement) {
         savedTestsTab.style.display = 'none';
     });
 
+    // Event-Listener für das Anzeigen gespeicherter Tests
     tabSavedTests.addEventListener('click', () => {
         if (configDiv.contains(rulesContainer)) {
             configDiv.removeChild(rulesContainer);
@@ -42,8 +47,10 @@ function setupConfiguratorEventListeners(field: HTMLInputElement) {
         }
     });
 
+    // Event-Listener für die Auswahl des Testtyps
     testTypeSelect.addEventListener('change', () => {
         const selectedType = testTypeSelect.value;
+        // Zeige oder verstecke Konfigurationselemente basierend auf dem ausgewählten Testtyp
         if (selectedType === 'number' || selectedType === 'string') {
             numberStringConfig.style.display = 'block';
             validValuesConfig.style.display = 'none';
@@ -75,11 +82,13 @@ function setupConfiguratorEventListeners(field: HTMLInputElement) {
         }
     });
 
+    // Event-Listener für das "Erforderlich"-Checkbox
     configDiv.querySelector('#required-checkbox')?.addEventListener('change', (event) => {
         const isChecked = (event.target as HTMLInputElement).checked;
         invalidMessageConfig.style.display = isChecked ? 'block' : 'none';
     });
 
+    // Event-Listener für das Speichern der Konfiguration
     configDiv.querySelector('#save-config')?.addEventListener('click', () => {
         const fieldType = (configDiv.querySelector('#field-type') as HTMLSelectElement).value;
         const validValues = (configDiv.querySelector('#valid-values') as HTMLInputElement).value.split(',').map(v => v.trim()).filter(v => v);
@@ -91,6 +100,7 @@ function setupConfiguratorEventListeners(field: HTMLInputElement) {
 
         let constraints: FieldConstraints | undefined;
 
+        // Erstelle die entsprechenden Constraints basierend auf dem Feldtyp
         if (fieldType === 'number') {
             const min = parseFloat((configDiv.querySelector('#min-value') as HTMLInputElement).value.trim());
             const max = parseFloat((configDiv.querySelector('#max-value') as HTMLInputElement).value.trim());
@@ -107,6 +117,7 @@ function setupConfiguratorEventListeners(field: HTMLInputElement) {
             constraints = { type: 'checkbox', required, validMessage, invalidMessage, submitButtonId };
         }
 
+        // Speichere die Constraints, wenn sie definiert sind
         if (constraints) {
             const fieldKey = field.id || field.name;
             if (!fieldKey) {
@@ -125,10 +136,12 @@ function setupConfiguratorEventListeners(field: HTMLInputElement) {
         saveFieldRulesToLocalStorage();
     });
 
+    // Event-Listener für das Generieren von Tests
     configDiv.querySelector('#generate-tests')?.addEventListener('click', () => {
         generatePlaywrightTests(field);
     });
 
+    // Event-Listener für das Abbrechen der Konfiguration
     configDiv.querySelector('#cancel-config')?.addEventListener('click', () => {
         if (configDiv.contains(rulesContainer)) {
             configDiv.removeChild(rulesContainer);
@@ -138,6 +151,7 @@ function setupConfiguratorEventListeners(field: HTMLInputElement) {
     });
 }
 
+// Erstellt einen Container für die Buttons im Konfigurator
 function createButtonContainer(): HTMLDivElement {
     const buttonContainer = document.createElement('div');
     buttonContainer.style.textAlign = 'center';
@@ -166,8 +180,7 @@ function createButtonContainer(): HTMLDivElement {
     return buttonContainer;
 }
 
-
-
+// Findet den Submit-Button auf der Seite
 function findSubmitButton() {
     for (const selector of SELECTORS) {
         const button = document.querySelector(selector); //TODO: Nach form selector suchen
@@ -179,8 +192,7 @@ function findSubmitButton() {
     return 'nicht definiert';
 }
 
-
-
+// Zeigt die gespeicherten Regeln für ein Feld an
 function displayFieldRules(field: HTMLInputElement) {
     rulesContainer = document.createElement('div');
     rulesContainer.style.border = '1px solid #e0e0e0';
@@ -212,6 +224,7 @@ function displayFieldRules(field: HTMLInputElement) {
             ruleText.style.fontSize = '14px';
             ruleText.style.fontWeight = '500';
 
+            // Füge spezifische Informationen zur Regel hinzu
             if (rule.type === 'number' || rule.type === 'string') {
                 ruleText.textContent += ` | Min: ${rule.min} | Max: ${rule.max}`;
             }
@@ -247,6 +260,7 @@ function displayFieldRules(field: HTMLInputElement) {
                 deleteButton.style.backgroundColor = '#f44336';
             });
 
+            // Event-Listener zum Löschen einer Regel
             deleteButton.addEventListener('click', () => {
                 rules.splice(index, 1);
                 saveFieldRulesToLocalStorage();
@@ -262,6 +276,7 @@ function displayFieldRules(field: HTMLInputElement) {
     return rulesContainer;
 }
 
+// Speichert die Feldregeln im lokalen Speicher
 function saveFieldRulesToLocalStorage() {
     try {
         const rules = Array.from(fieldRules.entries()).reduce((acc, [field, constraintsArray]) => {
@@ -276,6 +291,8 @@ function saveFieldRulesToLocalStorage() {
         console.error('Fehler beim Speichern der Feldregeln im lokalen Speicher:', error);
     }
 }
+
+// Lädt die Feldregeln aus dem lokalen Speicher
 export function loadFieldRulesFromLocalStorage() {
     try {
         const rules = localStorage.getItem('fieldRules');
@@ -293,6 +310,7 @@ export function loadFieldRulesFromLocalStorage() {
     }
 }
 
+// Initialisiert das UI des Konfigurators
 export function setupConfiguratorUI() {
     if (!initialized) { return; }
     configDiv = document.createElement('div');
@@ -313,6 +331,7 @@ export function setupConfiguratorUI() {
     configDiv.style.color = '#333';
     configDiv.style.display = 'none';
 
+    // HTML-Inhalt des Konfigurators
     configDiv.innerHTML = `
         <h3 id="config-title" style="text-align: center; margin-bottom: 20px; color: #4CAF50;"></h3>
         <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
@@ -365,6 +384,7 @@ export function setupConfiguratorUI() {
     document.body.appendChild(configDiv);
 }
 
+// Öffnet den Konfigurator für ein bestimmtes Feld
 export function openFieldConfigurator(field: HTMLInputElement) {
     if (!initialized) {
         initialized = true;

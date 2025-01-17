@@ -3,6 +3,7 @@ import { FieldConstraints } from '../types/fieldTypes';
 
 let globalIndex = 0;
 
+// Generiert Playwright-Tests basierend auf den Regeln für ein bestimmtes Eingabefeld
 export function generatePlaywrightTests(field: HTMLInputElement) {
     const rules = fieldRules.get(field);
     if (!rules || rules.length === 0) return;
@@ -10,6 +11,7 @@ export function generatePlaywrightTests(field: HTMLInputElement) {
     const fieldId = field.id || field.name || 'unbenanntes Feld';
     let testCode = `import { test, expect } from '@playwright/test';\n\n`;
 
+    // Iteriere über alle Regeln und generiere entsprechende Tests
     rules.forEach(rule => {
         const additionalFill = generateAdditionalFill(field);
         switch (rule.type) {
@@ -31,12 +33,14 @@ export function generatePlaywrightTests(field: HTMLInputElement) {
         }
     });
 
+    // Füge den generierten Testcode in die Test-Output-Box ein
     const outputBox = document.getElementById('test-output');
     if (outputBox) {
         outputBox.textContent += testCode + '\n';
     }
 }
 
+// Generiert den Testcode für ein bestimmtes Feld basierend auf den übergebenen Parametern
 function generateTestCode(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, testType: string, values: number[] | string[], invalidValues: number[] | string[], additionalFill: string, comprehensive: boolean) {
     let testCode = '';
     if (!comprehensive) {
@@ -62,6 +66,7 @@ function generateTestCode(fieldId: string, field: HTMLInputElement, rule: FieldC
     return testCode;
 }
 
+// Generiert Tests für Zahlenfelder
 function generateNumberTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
     if (!field || !rule.min || !rule.max) {
         console.error('Fehler: Ungültiges Feld oder Regel für Zahlenfeld.');
@@ -73,6 +78,7 @@ function generateNumberTests(fieldId: string, field: HTMLInputElement, rule: Fie
     return '';
 }
 
+// Generiert Tests für Textfelder
 function generateStringTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
     if (!field || !rule.min || !rule.max) {
         console.error('Fehler: Ungültiges Feld oder Regel für Textfeld.');
@@ -84,6 +90,7 @@ function generateStringTests(fieldId: string, field: HTMLInputElement, rule: Fie
     return '';
 }
 
+// Generiert Tests für gültige Werte
 function generateValidValuesTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
     if (!field || !rule.validValues) {
         console.error('Fehler: Ungültiges Feld oder Regel für gültige Werte.');
@@ -96,6 +103,7 @@ function generateValidValuesTests(fieldId: string, field: HTMLInputElement, rule
     return '';
 }
 
+// Generiert Tests für ungültige Werte
 function generateInvalidValuesTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
     if (!field || !rule.invalidValues) {
         console.error('Fehler: Ungültiges Feld oder Regel für ungültige Werte.');
@@ -108,6 +116,7 @@ function generateInvalidValuesTests(fieldId: string, field: HTMLInputElement, ru
     return '';
 }
 
+// Generiert Tests für Checkboxen
 function generateCheckboxTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
     if (!field || rule.required === undefined) {
         console.error('Fehler: Ungültiges Feld oder fehlende Regel für Checkbox.');
@@ -135,6 +144,7 @@ function generateCheckboxTests(fieldId: string, field: HTMLInputElement, rule: F
     return testCode;
 }
 
+// Generiert einen gültigen Wert basierend auf der Regel
 function generateValidValue(rule: FieldConstraints): string {
     switch (rule.type) {
         case 'number':
@@ -155,6 +165,7 @@ function generateValidValue(rule: FieldConstraints): string {
     }
 }
 
+// Generiert zusätzliche Füllwerte für andere Felder
 function generateAdditionalFill(currentField: HTMLInputElement): string {
     let additionalFill = '';
     fieldRules.forEach((rules, field) => {
@@ -170,6 +181,7 @@ function generateAdditionalFill(currentField: HTMLInputElement): string {
     return additionalFill;
 }
 
+// Generiert einen umfassenden Test für alle Felder
 export function generateComprehensiveTest() {
     let testCode = `import { test, expect } from '@playwright/test';\n\n`;
     testCode += `
@@ -212,6 +224,7 @@ export function generateComprehensiveTest() {
     }
 }
 
+// Listener für Nachrichten von der Chrome-Erweiterung
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'generateTests') {
         let testCode = generateComprehensiveTest();

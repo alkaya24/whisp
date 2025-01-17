@@ -1,13 +1,13 @@
 /// <reference types="chrome" />
 
-// UI-Elemente
+// UI-Elemente aus dem Popup-DOM abrufen
 const toggleExtension = document.getElementById('toggle-extension') as HTMLInputElement;
 const toggleLabel = document.getElementById('toggle-label') as HTMLElement;
 const generateTestsButton = document.getElementById('generate-tests') as HTMLButtonElement;
 const message = document.getElementById('message') as HTMLElement;
 
+// Initialisiert die Popup-UI, indem der Status der Erweiterung aus dem Chrome-Speicher geladen wird
 function initializePopupUI() {
-    // Lade den Status aus Chrome Storage
     chrome.storage.local.get(['extensionEnabled'], (result) => {
         if (chrome.runtime.lastError) {
             console.error('Fehler beim Zugriff auf den Speicher:', chrome.runtime.lastError);
@@ -19,20 +19,23 @@ function initializePopupUI() {
     });
 }
 
+// Setzt die Event-Listener für die UI-Elemente im Popup
 function setupPopupEventListeners() {
     toggleExtension.addEventListener('change', onToggleChange);
     generateTestsButton.addEventListener('click', onGenerateTestsClick);
 }
 
+// Wird aufgerufen, wenn der Schalter für die Erweiterung umgelegt wird
 function onToggleChange() {
     const isEnabled = toggleExtension.checked;
 
-    // Speichere den Status in Chrome Storage
+    // Speichert den neuen Status der Erweiterung im Chrome-Speicher
     chrome.storage.local.set({ extensionEnabled: isEnabled });
 
-    updateToggleUI(isEnabled); // UI aktualisieren
+    updateToggleUI(isEnabled); // Aktualisiert die UI basierend auf dem neuen Status
 }
 
+// Asynchrone Funktion, die aufgerufen wird, wenn der Button zum Generieren von Tests geklickt wird
 async function onGenerateTestsClick() {
     console.log('generateTestsButton clicked');
     try {
@@ -50,13 +53,13 @@ async function onGenerateTestsClick() {
     }
 }
 
-// UI basierend auf dem Status aktualisieren
+// Aktualisiert die UI-Elemente basierend auf dem Aktivierungsstatus der Erweiterung
 function updateToggleUI(isEnabled: boolean) {
     toggleExtension.checked = isEnabled;
     toggleLabel.textContent = isEnabled ? 'Extension aktiviert' : 'Extension deaktiviert';
     generateTestsButton.style.display = isEnabled ? 'block' : 'none';
 }
 
-// Call the new functions
+// Initialisiert die Popup-UI und setzt die Event-Listener
 initializePopupUI();
 setupPopupEventListeners();
