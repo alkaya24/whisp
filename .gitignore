@@ -27,3 +27,4 @@ yarn-error.log*
 
 # MacOS
 .DS_Store
+test-results/.last-run.json

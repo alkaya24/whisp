@@ -13,6 +13,7 @@ export function findCheckboxes(): HTMLInputElement[] {
 }
 
 export function labelAndCountCheckboxes(checkboxes: HTMLInputElement[]) {
+    const fragment = document.createDocumentFragment();
     checkboxes.forEach((checkbox, index) => {
         // Markiere Checkboxen mit einem Rahmen
         checkbox.style.border = "2px solid orange";
@@ -34,8 +35,10 @@ export function labelAndCountCheckboxes(checkboxes: HTMLInputElement[]) {
         label.style.top = `${window.scrollY + rect.top - 20}px`;
         label.style.left = `${window.scrollX + rect.left}px`;
 
-        document.body.appendChild(label);
+        fragment.appendChild(label);
     });
+
+    document.body.appendChild(fragment);
 
     // Aktualisiere das Overlay für die Checkbox-Zählung
     updateCheckboxCountOverlay(checkboxes.length);

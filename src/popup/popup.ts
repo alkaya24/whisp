@@ -9,6 +9,10 @@ const message = document.getElementById('message') as HTMLElement;
 function initializePopupUI() {
     // Lade den Status aus Chrome Storage
     chrome.storage.local.get(['extensionEnabled'], (result) => {
+        if (chrome.runtime.lastError) {
+            console.error('Fehler beim Zugriff auf den Speicher:', chrome.runtime.lastError);
+            return;
+        }
         const isEnabled = result.extensionEnabled || false;
         toggleExtension.checked = isEnabled;
         updateToggleUI(isEnabled);
@@ -29,21 +33,21 @@ function onToggleChange() {
     updateToggleUI(isEnabled); // UI aktualisieren
 }
 
-function onGenerateTestsClick() {
+async function onGenerateTestsClick() {
     console.log('generateTestsButton clicked');
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    try {
+        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tabs[0].id) {
-            chrome.tabs.sendMessage(tabs[0].id, { action: 'generateTests' }, (response) => {
-                if (response) {
-                    // Zeige den generierten Testcode im Popup an oder logge ihn
-                    console.log('Generierter Testcode:', response.testCode);
-                    message.textContent = 'Gesamttest erfolgreich generiert!';
-                    message.style.display = 'block';
-                    setTimeout(() => (message.style.display = 'none'), 3000);
-                }
-            });
+            const response = await chrome.tabs.sendMessage(tabs[0].id, { action: 'generateTests' });
+            if (response) {
+                message.textContent = 'Gesamttest erfolgreich generiert!';
+                message.style.display = 'block';
+                setTimeout(() => (message.style.display = 'none'), 3000);
+            }
         }
-    });
+    } catch (error) {
+        console.error('Fehler beim Generieren der Tests:', error);
+    }
 }
 
 // UI basierend auf dem Status aktualisieren

@@ -15,6 +15,10 @@ function setupEventListeners() {
 
 function onWindowLoad() {
     chrome.storage.local.get(['extensionEnabled'], (result) => {
+        if (chrome.runtime.lastError) {
+            console.error('Fehler beim Zugriff auf den Speicher:', chrome.runtime.lastError);
+            return;
+        }
         const isEnabled = result.extensionEnabled || false;
         let configDiv = document.querySelector('.field-configurator') as HTMLElement;
         if (!isEnabled) {
@@ -28,27 +32,16 @@ function onWindowLoad() {
 
     fields.forEach((field, index) => {
         //field.style.border = "2px solid red";
-        const label = document.createElement('span');
-        label.innerText = `Feld ${index + 1}`;
-        label.classList.add('content-ui-element');
-        label.style.position = 'absolute';
-        label.style.backgroundColor = 'yellow';
-        label.style.color = 'black';
-        label.style.fontSize = '12px';
-        label.style.padding = '2px';
-        label.style.border = '1px solid black';
-        label.style.borderRadius = '3px';
-        label.style.zIndex = '1000';
-
-        const rect = field.getBoundingClientRect();
-        label.style.top = `${window.scrollY + rect.top - 20}px`;
-        label.style.left = `${window.scrollX + rect.left}px`;
-
+        const label = createFieldLabel(index, field);
         document.body.appendChild(label);
 
         field.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             chrome.storage.local.get(['extensionEnabled'], (result) => {
+                if (chrome.runtime.lastError) {
+                    console.error('Fehler beim Zugriff auf den Speicher:', chrome.runtime.lastError);
+                    return;
+                }
                 const isEnabled = result.extensionEnabled || false;
                 if (isEnabled && !configShown) {
                     openFieldConfigurator(field);
@@ -158,9 +151,30 @@ function addTestOutputBox() {
     document.body.appendChild(outputContainer);
 }
 
-// Call the new functions
-initializeUI();
-setupEventListeners();
+function createFieldLabel(index: number, field: Element): HTMLSpanElement {
+    const label = document.createElement('span');
+    label.innerText = `Feld ${index + 1}`;
+    label.classList.add('content-ui-element');
+
+    // Apply styles
+    Object.assign(label.style, {
+        position: 'absolute',
+        backgroundColor: 'yellow',
+        color: 'black',
+        fontSize: '12px',
+        padding: '2px',
+        border: '1px solid black',
+        borderRadius: '3px',
+        zIndex: '1000'
+    });
+
+    // Position the label
+    const rect = field.getBoundingClientRect();
+    label.style.top = `${window.scrollY + rect.top - 20}px`;
+    label.style.left = `${window.scrollX + rect.left}px`;
+
+    return label;
+}
 
 export function updateContentUI(isEnabled: boolean) {
     const uiElements = document.querySelectorAll('.content-ui-element');
@@ -172,3 +186,7 @@ export function updateContentUI(isEnabled: boolean) {
         }
     });
 }
+
+// Call the new functions
+initializeUI();
+setupEventListeners();

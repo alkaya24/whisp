@@ -63,6 +63,10 @@ function generateTestCode(fieldId: string, field: HTMLInputElement, rule: FieldC
 }
 
 function generateNumberTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
+    if (!field || !rule.min || !rule.max) {
+        console.error('Fehler: Ungültiges Feld oder Regel für Zahlenfeld.');
+        return '';
+    }
     if (rule.min !== undefined && rule.max !== undefined) {
         return generateTestCode(fieldId, field, rule, 'Zahlenfeld', [rule.min, rule.max, rule.min + 1, rule.max - 1], [rule.min - 1, rule.max + 1], additionalFill, comprehensive);
     }
@@ -70,6 +74,10 @@ function generateNumberTests(fieldId: string, field: HTMLInputElement, rule: Fie
 }
 
 function generateStringTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
+    if (!field || !rule.min || !rule.max) {
+        console.error('Fehler: Ungültiges Feld oder Regel für Textfeld.');
+        return '';
+    }
     if (rule.min !== undefined && rule.max !== undefined) {
         return generateTestCode(fieldId, field, rule, 'Textfeld', ['a'.repeat(rule.min), 'a'.repeat(rule.max), 'a'.repeat(rule.min + 1), 'a'.repeat(rule.max - 1)], ['a'.repeat(rule.min - 1), 'a'.repeat(rule.max + 1)], additionalFill, comprehensive);
     }
@@ -77,7 +85,11 @@ function generateStringTests(fieldId: string, field: HTMLInputElement, rule: Fie
 }
 
 function generateValidValuesTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
-    if (rule.validValues && rule.validValues.length > 0) {
+    if (!field || !rule.validValues) {
+        console.error('Fehler: Ungültiges Feld oder Regel für gültige Werte.');
+        return '';
+    }
+    if (rule.validValues.length > 0) {
         const dummyValues = ['dummy1', 'dummy2', 'dummy3'];
         return generateTestCode(fieldId, field, rule, 'Gültige Werte', rule.validValues, dummyValues, additionalFill, comprehensive);
     }
@@ -85,7 +97,11 @@ function generateValidValuesTests(fieldId: string, field: HTMLInputElement, rule
 }
 
 function generateInvalidValuesTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
-    if (rule.invalidValues && rule.invalidValues.length > 0) {
+    if (!field || !rule.invalidValues) {
+        console.error('Fehler: Ungültiges Feld oder Regel für ungültige Werte.');
+        return '';
+    }
+    if (rule.invalidValues.length > 0) {
         const dummyValues = ['dummy1', 'dummy2', 'dummy3'];
         return generateTestCode(fieldId, field, rule, 'Ungültige Werte', rule.invalidValues, dummyValues, additionalFill, comprehensive);
     }
@@ -93,34 +109,27 @@ function generateInvalidValuesTests(fieldId: string, field: HTMLInputElement, ru
 }
 
 function generateCheckboxTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
+    if (!field || rule.required === undefined) {
+        console.error('Fehler: Ungültiges Feld oder fehlende Regel für Checkbox.');
+        return '';
+    }
     let testCode = '';
     if (!comprehensive) {
-        testCode += `
-test('Checkbox ${fieldId}', async ({ page }) => {
-`
+        testCode += `\ntest('Checkbox ${fieldId}', async ({ page }) => {\n`;
     }
 
-    testCode += `
-    await page.goto('${window.location.href}');
-    const checkbox${globalIndex} = await page.locator('input[id="${fieldId}"]');
-    const submitButton${globalIndex} = await page.locator('button[id="${rule.submitButtonId}"]');
+    testCode += `\n    await page.goto('${window.location.href}');\n    const checkbox${globalIndex} = await page.locator('input[id="${fieldId}"]');\n    const submitButton${globalIndex} = await page.locator('button[id="${rule.submitButtonId}"]');\n`;
 
     // Positiver Test
-    await checkbox${globalIndex}.check();
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.validMessage}');
+    testCode += `\n    await checkbox${globalIndex}.check();\n${additionalFill || ''}`;
+    testCode += `\n    await submitButton${globalIndex}.click();\n    await expect(page.locator('body')).toContainText('${rule.validMessage}');`;
 
     // Negativer Test
-    await checkbox${globalIndex}.uncheck();
-${additionalFill || ''}
-    await submitButton${globalIndex}.click();
-    await expect(page.locator('body')).toContainText('${rule.required ? rule.invalidMessage : rule.validMessage}');
-`;
+    testCode += `\n    await checkbox${globalIndex}.uncheck();\n${additionalFill || ''}`;
+    testCode += `\n    await submitButton${globalIndex}.click();\n    await expect(page.locator('body')).toContainText('${rule.required ? rule.invalidMessage : rule.validMessage}');`;
+
     if (!comprehensive) {
-        testCode += `
-});
-`;
+        testCode += `\n});\n`;
     }
     globalIndex++;
     return testCode;
