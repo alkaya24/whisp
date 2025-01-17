@@ -65,6 +65,7 @@ function onWindowLoad() {
     loadFieldRulesFromLocalStorage();
 }
 
+// Wird aufgerufen, wenn sich der Speicher ändert
 function onStorageChange(changes: { [key: string]: chrome.storage.StorageChange }, namespace: string) {
     if (changes.extensionEnabled) {
         const newValue = changes.extensionEnabled.newValue;
@@ -72,6 +73,7 @@ function onStorageChange(changes: { [key: string]: chrome.storage.StorageChange 
     }
 }
 
+// Aktualisiert die Anzahl der erkannten Felder im Overlay
 function updateFieldCountOverlay(count: number) {
     let overlay = document.getElementById('field-count-overlay') as HTMLElement;
 
@@ -102,61 +104,145 @@ function addTestOutputBox() {
     outputContainer.style.position = 'fixed';
     outputContainer.style.bottom = '10px';
     outputContainer.style.left = '10px';
-    outputContainer.style.width = '300px';
-    outputContainer.style.height = '250px';
-    outputContainer.style.backgroundColor = 'white';
-    outputContainer.style.border = '1px solid #ddd';
-    outputContainer.style.borderRadius = '10px';
-    outputContainer.style.padding = '10px';
-    outputContainer.style.overflowY = 'auto';
-    outputContainer.style.zIndex = '10001';
-    outputContainer.style.fontFamily = 'monospace';
 
-    // Box für generierte Tests
+    const initialWidth = 300;
+    const initialHeight = 250;
+    outputContainer.style.width = initialWidth + 'px';
+    outputContainer.style.height = initialHeight + 'px';
+
+    // Basis-Styling für die Box
+    Object.assign(outputContainer.style, {
+        backgroundColor: 'white',
+        border: '1px solid #ddd',
+        borderRadius: '10px',
+        padding: '10px',
+        overflow: 'hidden',
+        zIndex: '10001',
+        fontFamily: 'monospace'
+    });
+
+    // Der Textbereich (oben in der Box)
     const outputBox = document.createElement('div');
     outputBox.id = 'test-output';
     outputBox.classList.add('content-ui-element');
-    outputBox.style.display = 'block';
-    outputBox.style.height = '200px';
-    outputBox.style.overflowY = 'auto';
-    outputBox.style.whiteSpace = 'pre-wrap';
-    outputBox.style.marginBottom = '10px';
+    Object.assign(outputBox.style, {
+        position: 'absolute',
+        top: '10px',
+        left: '10px',
+        right: '10px',
+        bottom: '60px',
+        overflowY: 'auto',
+        whiteSpace: 'pre-wrap',
+        backgroundColor: '#f9f9f9'
+    });
     outputContainer.appendChild(outputBox);
 
-    // Button zum Kopieren der generierten Tests
+    // Separater Container für die beiden Buttons
+    const buttonContainer = document.createElement('div');
+    Object.assign(buttonContainer.style, {
+        position: 'absolute',
+        left: '10px',
+        right: '10px',
+        bottom: '10px',
+        display: 'flex',
+        gap: '10px',
+        justifyContent: 'space-between'
+    });
+    outputContainer.appendChild(buttonContainer);
+
+    // Copy-Button
     const copyButton = document.createElement('button');
     copyButton.innerText = 'Tests kopieren';
-    copyButton.style.display = 'block';
-    copyButton.style.width = '100%';
-    copyButton.style.padding = '10px';
-    copyButton.style.fontSize = '14px';
-    copyButton.style.color = 'white';
-    copyButton.style.backgroundColor = '#4CAF50';
-    copyButton.style.border = 'none';
-    copyButton.style.borderRadius = '5px';
-    copyButton.style.cursor = 'pointer';
-    copyButton.style.textAlign = 'center';
-
-    // Event-Listener zum Kopieren der Tests in die Zwischenablage
+    Object.assign(copyButton.style, {
+        flex: '1',
+        height: '40px',
+        fontSize: '14px',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        backgroundColor: '#4CAF50',
+        color: 'white'
+    });
     copyButton.addEventListener('click', () => {
-        const outputContent = document.getElementById('test-output')?.textContent || '';
+        const outputContent = outputBox.textContent || '';
         if (outputContent.trim() === '') {
             alert('Keine Tests vorhanden, um sie zu kopieren.');
             return;
         }
         navigator.clipboard.writeText(outputContent)
-            .then(() => {
-                alert('Tests erfolgreich in die Zwischenablage kopiert!');
-            })
-            .catch((err) => {
-                console.error('Fehler beim Kopieren:', err);
-                alert('Fehler beim Kopieren der Tests.');
-            });
+            .then(() => alert('Tests erfolgreich kopiert!'))
+            .catch(err => alert('Fehler beim Kopieren: ' + err));
     });
+    buttonContainer.appendChild(copyButton);
 
-    outputContainer.appendChild(copyButton);
+    // Clear-Button
+    const clearButton = document.createElement('button');
+    clearButton.innerText = 'Inhalt löschen';
+    Object.assign(clearButton.style, {
+        flex: '1',
+        height: '40px',
+        fontSize: '14px',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        backgroundColor: '#f44336',
+        color: 'white'
+    });
+    clearButton.addEventListener('click', () => {
+        outputBox.textContent = '';
+    });
+    buttonContainer.appendChild(clearButton);
+
+    // Resize-Handle oben rechts (eigene Drag-Logik)
+    const resizeHandle = document.createElement('div');
+    Object.assign(resizeHandle.style, {
+        position: 'absolute',
+        top: '0',
+        right: '0',
+        width: '15px',
+        height: '15px',
+        cursor: 'nwse-resize',
+        backgroundColor: 'rgba(0,0,0,0.2)'
+    });
+    outputContainer.appendChild(resizeHandle);
+
+    // Drag-Events für "nach oben und rechts" vergrößern
+    resizeHandle.addEventListener('mousedown', onMouseDown);
+
+    function onMouseDown(e: MouseEvent) {
+        e.preventDefault();
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startWidth = parseInt(window.getComputedStyle(outputContainer).width, 10);
+        const startHeight = parseInt(window.getComputedStyle(outputContainer).height, 10);
+
+        function onMouseMove(ev: MouseEvent) {
+            const dx = ev.clientX - startX;
+            const dy = startY - ev.clientY; // oben -> Y wird kleiner
+            let newWidth = startWidth + dx;
+            let newHeight = startHeight + dy;
+
+            // Mindestbreite/-höhe erzwingen
+            if (newWidth < initialWidth) newWidth = initialWidth;
+            if (newHeight < initialHeight) newHeight = initialHeight;
+
+            outputContainer.style.width = newWidth + 'px';
+            outputContainer.style.height = newHeight + 'px';
+        }
+
+        function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    }
+
+    // Box zum DOM hinzufügen
     document.body.appendChild(outputContainer);
 }
+
 
 // Erstellt ein Label für ein Eingabefeld
 function createFieldLabel(index: number, field: Element): HTMLSpanElement {
