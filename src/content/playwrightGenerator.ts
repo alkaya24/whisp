@@ -40,11 +40,16 @@ export function generatePlaywrightTests(field: HTMLInputElement) {
     }
 }
 
+// Generiert eine zufällige 4-stellige Test-ID
+function generateTestId() {
+    return Math.floor(1000 + Math.random() * 9000).toString();
+}
+
 // Generiert den Testcode für ein bestimmtes Feld basierend auf den übergebenen Parametern
 function generateTestCode(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, testType: string, values: number[] | string[], invalidValues: number[] | string[], additionalFill: string, comprehensive: boolean) {
     let testCode = '';
     if (!comprehensive) {
-        testCode += `\ntest('${testType} ${fieldId}', async ({ page }) => {\n`;
+        testCode += `\ntest('${fieldId} ${testType} - ID: ${generateTestId()}', async ({ page }) => {\n`;
     }
 
     testCode += `\n    await page.goto('${window.location.href}');\n    const field${globalIndex} = await page.locator('input[id="${fieldId}"]');\n    const submitButton${globalIndex} = await page.locator('button[id="${rule.submitButtonId}"]');\n`;
@@ -185,7 +190,7 @@ function generateAdditionalFill(currentField: HTMLInputElement): string {
 export function generateComprehensiveTest() {
     let testCode = `import { test, expect } from '@playwright/test';\n\n`;
     testCode += `
-    test('Gesamttest', async ({ page }) => {
+    test('Gesamttest - ID: ${generateTestId()}', async ({ page }) => {
 `;
     if (fieldRules.size === 0) return;
 

@@ -231,6 +231,7 @@ function displayFieldRules(field: HTMLInputElement) {
                 ruleText.textContent += ` | Erforderlich: ${rule.required ? 'Ja' : 'Nein'}`;
             }
             ruleText.textContent += ` | Erfolgsnachricht: ${rule.validMessage} | Fehlernachricht: ${rule.invalidMessage}`;
+            ruleText.textContent += ` | Submit-Button ID: ${rule.submitButtonId}`;
 
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'x';
