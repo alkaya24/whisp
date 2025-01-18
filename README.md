@@ -104,4 +104,19 @@ npx playwright test tests/generatedTests.spec.ts
   Prüfen, dass die Extension aktiv ist und die richtige Seite getestet wird.
 
 
+### CI/CD Pipeline
+
+Dieses Projekt verwendet GitHub Actions für die CI/CD-Pipeline. Die Pipeline ist so konfiguriert, dass sie automatisch bei jedem Push in das Repository ausgeführt wird.
+
+### **Pipeline-Schritte**
+1. **Code-Qualitätsprüfung**: Führt `npm run lint` aus, um sicherzustellen, dass der Code den Standards entspricht.
+2. **Build-Prozess**: Baut das Projekt mit Webpack, um sicherzustellen, dass der Code fehlerfrei kompiliert.
+3. **Tests**: Führt alle definierten Unit-Tests und Integrationstests mit `npm test` aus.
+
+### **Trigger**
+- **Automatisch**: Wird bei jedem Push in den Branch `main` oder bei Pull-Requests ausgeführt.
+- **Manuell**: Kann über die GitHub Actions-Seite mit `workflow_dispatch` gestartet werden.
+
+Die Logs und Ergebnisse jedes Pipeline-Runs können unter [GitHub Actions](https://github.com/dein-benutzername/dein-repo/actions) eingesehen werden.
+
 
