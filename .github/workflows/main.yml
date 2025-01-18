@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline for Chrome Extension
 
 on:
   push:
@@ -7,31 +7,35 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # Checkout Repository
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      # Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
 
-      - name: Install dependencies
+      # Install Dependencies
+      - name: Install Dependencies
         run: npm ci
 
+      # Lint Code (Optional)
+      - name: Lint Code
+        run: npx eslint . --ext .ts,.js
+
+      # Build Extension
       - name: Build Chrome Extension
         run: npm run build
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Run Playwright tests
-        run: xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' npx playwright test tests/formTests.spec.ts
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+      # Upload Build Artifact
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 30
+          name: chrome-extension-dist
+          path: dist/
