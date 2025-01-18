@@ -7,7 +7,6 @@ const SELECTORS = ['button[type="submit"]', 'input[type="submit"]', 'button[id="
 export let configShown: boolean = false;
 let rulesContainer: HTMLDivElement;
 let configDiv: HTMLDivElement;
-let initialized: boolean = false;
 
 // Setzt Event-Listener für den Konfigurator
 function setupConfiguratorEventListeners(field: HTMLInputElement) {
@@ -142,13 +141,7 @@ function setupConfiguratorEventListeners(field: HTMLInputElement) {
     });
 
     // Event-Listener für das Abbrechen der Konfiguration
-    configDiv.querySelector('#cancel-config')?.addEventListener('click', () => {
-        if (configDiv.contains(rulesContainer)) {
-            configDiv.removeChild(rulesContainer);
-        }
-        configDiv.style.display = 'none';
-        configShown = false;
-    });
+    configDiv.querySelector('#cancel-config')?.addEventListener('click', cancelConfig);
 }
 
 // Erstellt einen Container für die Buttons im Konfigurator
@@ -312,9 +305,8 @@ export function loadFieldRulesFromLocalStorage() {
 
 // Initialisiert das UI des Konfigurators
 export function setupConfiguratorUI() {
-    if (!initialized) { return; }
     configDiv = document.createElement('div');
-    configDiv.classList.add('field-configurator', 'content-ui-element');
+    configDiv.id = 'field-configurator';
     configDiv.style.position = 'absolute';
     configDiv.style.top = '50%';
     configDiv.style.left = '50%';
@@ -386,9 +378,6 @@ export function setupConfiguratorUI() {
 
 // Öffnet den Konfigurator für ein bestimmtes Feld
 export function openFieldConfigurator(field: HTMLInputElement) {
-    if (!initialized) {
-        initialized = true;
-    }
     setupConfiguratorUI();
     const buttonContainer = createButtonContainer();
     configDiv.appendChild(buttonContainer);
@@ -404,4 +393,14 @@ export function openFieldConfigurator(field: HTMLInputElement) {
     // Zeige den Konfigurator an
     configDiv.style.display = 'block';
     configShown = true;
+}
+
+// Event-Listener für das Abbrechen der Konfiguration
+export function cancelConfig() {
+    if (configDiv.contains(rulesContainer)) {
+        configDiv.removeChild(rulesContainer);
+    }
+    configDiv.style.display = 'none';
+    document.body.removeChild(configDiv);
+    configShown = false;
 }

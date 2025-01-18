@@ -1,5 +1,5 @@
 import { findBasicInputFields, findCheckboxes, labelAndCountCheckboxes } from './detectFields';
-import { openFieldConfigurator, setupConfiguratorUI, loadFieldRulesFromLocalStorage, configShown } from './configurator';
+import { openFieldConfigurator, setupConfiguratorUI, loadFieldRulesFromLocalStorage, configShown, cancelConfig } from './configurator';
 import { validateField } from './validation';
 
 // Initialisiert die Benutzeroberfläche, indem das Konfigurator-Element und die Testausgabebox hinzugefügt werden
@@ -22,10 +22,6 @@ function onWindowLoad() {
             return;
         }
         const isEnabled = result.extensionEnabled || false;
-        let configDiv = document.querySelector('.field-configurator') as HTMLElement;
-        if (!isEnabled) {
-            configDiv.style.display = 'none';
-        }
         updateContentUI(isEnabled);
     });
 
@@ -271,7 +267,7 @@ function createFieldLabel(index: number, field: Element): HTMLSpanElement {
 }
 
 // Aktualisiert die Sichtbarkeit der UI-Elemente basierend auf dem Aktivierungsstatus der Erweiterung
-export function updateContentUI(isEnabled: boolean) {
+function updateContentUI(isEnabled: boolean) {
     const uiElements = document.querySelectorAll('.content-ui-element');
     uiElements.forEach(element => {
         if (isEnabled) {
@@ -280,6 +276,9 @@ export function updateContentUI(isEnabled: boolean) {
             (element as HTMLElement).style.display = 'none';
         }
     });
+    if (configShown) {
+        cancelConfig();
+    }
 }
 
 // Initialisiert die UI und setzt die Event-Listener
