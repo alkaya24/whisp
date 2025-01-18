@@ -5,27 +5,27 @@ on:
     branches:
       - main
   pull_request:
+    branches:
+      - main
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
+    - name: Install dependencies
+      run: npm install
 
-      - name: Install Dependencies
-        run: npm install
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
 
-      - name: Install Playwright Browsers
-        run: npx playwright install
+    - name: Start HTTP Server
+      run: npx http-server fileexample -p 8080 &
+      env:
+        NODE_ENV: test
 
-      - name: Install xvfb
-        run: sudo apt-get install xvfb
-
-      - name: Run Tests with xvfb
-        run: xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' npx playwright test
+    - name: Run tests
+      run: xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' npx playwright test
