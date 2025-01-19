@@ -10,8 +10,8 @@ test('Chrome Extension Test', async ({ page }) => {
         headless: false,
         args: [
             `--disable-extensions-except=${pathToExtension}`,
-            `--load-extension=${pathToExtension}`
-        ]
+            `--load-extension=${pathToExtension}`,
+        ],
     });
 
     await page.goto('https://example.com');

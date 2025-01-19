@@ -1,39 +1,36 @@
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const path = require('path');
+import CopyWebpackPlugin from 'copy-webpack-plugin';
+import path from 'path';
 
-module.exports = {
+export default {
     entry: {
-        //background: './src/background.ts',
         content: './src/content/index.ts',
-        popup: './src/popup/popup.ts'  // Nur falls  popup.ts wirklich verwendet wird
+        popup: './src/popup/popup.ts',
     },
     output: {
-        path: path.resolve(__dirname, 'dist'),  // alle Dateien in "dist/"
-        filename: '[name].js'
+        path: path.resolve(process.cwd(), 'dist'),
+        filename: '[name].js',
     },
     resolve: {
-        extensions: ['.ts', '.js']
+        extensions: ['.ts', '.js'],
     },
     module: {
         rules: [
             {
                 test: /\.ts$/,
                 use: 'ts-loader',
-                exclude: /node_modules/
-            }
-        ]
+                exclude: /node_modules/,
+            },
+        ],
     },
     plugins: [
         new CopyWebpackPlugin({
             patterns: [
-                // Kopiert manifest.json direkt in "dist/"
                 { from: 'src/manifest.json', to: '.' },
                 { from: 'src/icons', to: 'icons' },
-                // Falls popup.html vorhanden ist:
-                { from: 'src/popup/popup.html', to: '.' }
-            ]
-        })
+                { from: 'src/popup/popup.html', to: '.' },
+            ],
+        }),
     ],
     mode: 'development',
-    devtool: 'source-map'  // kein  eval() in den generierten Dateien
+    devtool: 'source-map',
 };

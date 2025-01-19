@@ -120,3 +120,37 @@ Dieses Projekt verwendet GitHub Actions für die CI/CD-Pipeline. Die Pipeline is
 Die Logs und Ergebnisse jedes Pipeline-Runs können unter [GitHub Actions](https://github.com/dein-benutzername/dein-repo/actions) eingesehen werden.
 
 
+
+
+## Statische Codeanalyse mit ESLint
+
+In diesem Projekt wird **ESLint** verwendet, um die Codequalität sicherzustellen und potenzielle Fehler zu finden.
+
+### Befehle
+
+- **Codeanalyse ausführen**:
+  ```bash
+  npx eslint "src/**/*.{ts,js}" "tests/**/*.{ts,js}"
+  ```
+
+- **Automatische Korrektur (so weit wie möglich)**:
+  ```bash
+  npx eslint "src/**/*.{ts,js}" "tests/**/*.{ts,js}" --fix
+  ```
+
+### Anpassungen
+
+- **Regeln anpassen**: Änderungen können in der Datei `eslint.config.js` vorgenommen werden. Beispiel:
+  ```javascript
+  rules: {
+    "max-len": ["error", { "code": 200 }], // Maximale Zeilenlänge auf 200 erhöhen
+    "no-console": "warn", // Konsolenausgaben als Warnung markieren
+  }
+  ```
+
+- **ESLint Version aktualisieren**:
+  ```bash
+  npm install eslint@latest @typescript-eslint/parser@latest @typescript-eslint/eslint-plugin@latest --save-dev
+  ```
+
+

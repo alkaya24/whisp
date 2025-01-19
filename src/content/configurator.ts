@@ -1,4 +1,4 @@
-import { generatePlaywrightTests } from "./playwrightGenerator";
+import { generatePlaywrightTests } from './playwrightGenerator';
 import { fieldRules } from './fieldRulesStore';
 import { FieldConstraints } from '../types/fieldTypes';
 
@@ -82,7 +82,7 @@ function setupConfiguratorEventListeners(field: HTMLInputElement) {
     });
 
     // Event-Listener für das "Erforderlich"-Checkbox
-    configDiv.querySelector('#required-checkbox')?.addEventListener('change', (event) => {
+    configDiv.querySelector('#required-checkbox')?.addEventListener('change', event => {
         const isChecked = (event.target as HTMLInputElement).checked;
         invalidMessageConfig.style.display = isChecked ? 'block' : 'none';
     });
@@ -121,6 +121,7 @@ function setupConfiguratorEventListeners(field: HTMLInputElement) {
             const fieldKey = field.id || field.name;
             if (!fieldKey) {
                 console.error('Feld hat keine ID oder Name, Regel kann nicht gespeichert werden.');
+
                 return;
             }
 
@@ -170,6 +171,7 @@ function createButtonContainer(): HTMLDivElement {
 
     buttonContainer.appendChild(generateTestsButton);
     buttonContainer.appendChild(cancelButton);
+
     return buttonContainer;
 }
 
@@ -182,6 +184,7 @@ function findSubmitButton() {
             // return selector; Optionales Feature, um den richtigen Selector zu finden
         }
     }
+
     return 'nicht definiert';
 }
 
@@ -278,6 +281,7 @@ function saveFieldRulesToLocalStorage() {
             if (key) {
                 acc[key] = constraintsArray;
             }
+
             return acc;
         }, {} as Record<string, FieldConstraints[]>);
         localStorage.setItem('fieldRules', JSON.stringify(rules));

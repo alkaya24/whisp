@@ -8,9 +8,10 @@ const message = document.getElementById('message') as HTMLElement;
 
 // Initialisiert die Popup-UI, indem der Status der Erweiterung aus dem Chrome-Speicher geladen wird
 function initializePopupUI() {
-    chrome.storage.local.get(['extensionEnabled'], (result) => {
+    chrome.storage.local.get(['extensionEnabled'], result => {
         if (chrome.runtime.lastError) {
             console.error('Fehler beim Zugriff auf den Speicher:', chrome.runtime.lastError);
+
             return;
         }
         const isEnabled = result.extensionEnabled || false;

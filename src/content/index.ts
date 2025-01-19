@@ -16,9 +16,10 @@ function setupEventListeners() {
 
 // Wird beim Laden des Fensters aufgerufen, um den Status der Erweiterung zu überprüfen und die UI entsprechend zu aktualisieren
 function onWindowLoad() {
-    chrome.storage.local.get(['extensionEnabled'], (result) => {
+    chrome.storage.local.get(['extensionEnabled'], result => {
         if (chrome.runtime.lastError) {
             console.error('Fehler beim Zugriff auf den Speicher:', chrome.runtime.lastError);
+
             return;
         }
         const isEnabled = result.extensionEnabled || false;
@@ -33,11 +34,12 @@ function onWindowLoad() {
         document.body.appendChild(label);
 
         // Kontextmenü-Event-Listener, um den Konfigurator zu öffnen, wenn die Erweiterung aktiviert ist
-        field.addEventListener('contextmenu', (e) => {
+        field.addEventListener('contextmenu', e => {
             e.preventDefault();
-            chrome.storage.local.get(['extensionEnabled'], (result) => {
+            chrome.storage.local.get(['extensionEnabled'], result => {
                 if (chrome.runtime.lastError) {
                     console.error('Fehler beim Zugriff auf den Speicher:', chrome.runtime.lastError);
+
                     return;
                 }
                 const isEnabled = result.extensionEnabled || false;
@@ -103,8 +105,8 @@ function addTestOutputBox() {
 
     const initialWidth = 300;
     const initialHeight = 250;
-    outputContainer.style.width = initialWidth + 'px';
-    outputContainer.style.height = initialHeight + 'px';
+    outputContainer.style.width = `${initialWidth  }px`;
+    outputContainer.style.height = `${initialHeight  }px`;
 
     // Basis-Styling für die Box
     Object.assign(outputContainer.style, {
@@ -114,7 +116,7 @@ function addTestOutputBox() {
         padding: '10px',
         overflow: 'hidden',
         zIndex: '10001',
-        fontFamily: 'monospace'
+        fontFamily: 'monospace',
     });
 
     // Der Textbereich (oben in der Box)
@@ -129,7 +131,7 @@ function addTestOutputBox() {
         bottom: '60px',
         overflowY: 'auto',
         whiteSpace: 'pre-wrap',
-        backgroundColor: '#f9f9f9'
+        backgroundColor: '#f9f9f9',
     });
     outputContainer.appendChild(outputBox);
 
@@ -142,7 +144,7 @@ function addTestOutputBox() {
         bottom: '10px',
         display: 'flex',
         gap: '10px',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
     });
     outputContainer.appendChild(buttonContainer);
 
@@ -157,17 +159,18 @@ function addTestOutputBox() {
         borderRadius: '5px',
         cursor: 'pointer',
         backgroundColor: '#4CAF50',
-        color: 'white'
+        color: 'white',
     });
     copyButton.addEventListener('click', () => {
         const outputContent = outputBox.textContent || '';
         if (outputContent.trim() === '') {
             alert('Keine Tests vorhanden, um sie zu kopieren.');
+
             return;
         }
         navigator.clipboard.writeText(outputContent)
             .then(() => alert('Tests erfolgreich kopiert!'))
-            .catch(err => alert('Fehler beim Kopieren: ' + err));
+            .catch(err => alert(`Fehler beim Kopieren: ${  err}`));
     });
     buttonContainer.appendChild(copyButton);
 
@@ -182,7 +185,7 @@ function addTestOutputBox() {
         borderRadius: '5px',
         cursor: 'pointer',
         backgroundColor: '#f44336',
-        color: 'white'
+        color: 'white',
     });
     clearButton.addEventListener('click', () => {
         outputBox.textContent = '';
@@ -198,7 +201,7 @@ function addTestOutputBox() {
         width: '15px',
         height: '15px',
         cursor: 'nwse-resize',
-        backgroundColor: 'rgba(0,0,0,0.2)'
+        backgroundColor: 'rgba(0,0,0,0.2)',
     });
     outputContainer.appendChild(resizeHandle);
 
@@ -222,8 +225,8 @@ function addTestOutputBox() {
             if (newWidth < initialWidth) newWidth = initialWidth;
             if (newHeight < initialHeight) newHeight = initialHeight;
 
-            outputContainer.style.width = newWidth + 'px';
-            outputContainer.style.height = newHeight + 'px';
+            outputContainer.style.width = `${newWidth  }px`;
+            outputContainer.style.height = `${newHeight  }px`;
         }
 
         function onMouseUp() {
@@ -238,7 +241,6 @@ function addTestOutputBox() {
     // Box zum DOM hinzufügen
     document.body.appendChild(outputContainer);
 }
-
 
 // Erstellt ein Label für ein Eingabefeld
 function createFieldLabel(index: number, field: Element): HTMLSpanElement {
@@ -255,7 +257,7 @@ function createFieldLabel(index: number, field: Element): HTMLSpanElement {
         padding: '2px',
         border: '1px solid black',
         borderRadius: '3px',
-        zIndex: '1000'
+        zIndex: '1000',
     });
 
     // Positioniere das Label relativ zum Eingabefeld

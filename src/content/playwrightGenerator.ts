@@ -9,7 +9,7 @@ export function generatePlaywrightTests(field: HTMLInputElement) {
     if (!rules || rules.length === 0) return;
 
     const fieldId = field.id || field.name || 'unbenanntes Feld';
-    let testCode = `import { test, expect } from '@playwright/test';\n\n`;
+    let testCode = 'import { test, expect } from \'@playwright/test\';\n\n';
 
     // Iteriere über alle Regeln und generiere entsprechende Tests
     rules.forEach(rule => {
@@ -36,7 +36,7 @@ export function generatePlaywrightTests(field: HTMLInputElement) {
     // Füge den generierten Testcode in die Test-Output-Box ein
     const outputBox = document.getElementById('test-output');
     if (outputBox) {
-        outputBox.textContent += testCode + '\n';
+        outputBox.textContent += `${testCode  }\n`;
     }
 }
 
@@ -65,9 +65,10 @@ function generateTestCode(fieldId: string, field: HTMLInputElement, rule: FieldC
     });
 
     if (!comprehensive) {
-        testCode += `\n});\n`;
+        testCode += '\n});\n';
     }
     globalIndex++;
+
     return testCode;
 }
 
@@ -75,11 +76,13 @@ function generateTestCode(fieldId: string, field: HTMLInputElement, rule: FieldC
 function generateNumberTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
     if (!field || !rule.min || !rule.max) {
         console.error('Fehler: Ungültiges Feld oder Regel für Zahlenfeld.');
+
         return '';
     }
     if (rule.min !== undefined && rule.max !== undefined) {
         return generateTestCode(fieldId, field, rule, 'Zahlenfeld', [rule.min, rule.max, rule.min + 1, rule.max - 1], [rule.min - 1, rule.max + 1], additionalFill, comprehensive);
     }
+
     return '';
 }
 
@@ -87,11 +90,13 @@ function generateNumberTests(fieldId: string, field: HTMLInputElement, rule: Fie
 function generateStringTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
     if (!field || !rule.min || !rule.max) {
         console.error('Fehler: Ungültiges Feld oder Regel für Textfeld.');
+
         return '';
     }
     if (rule.min !== undefined && rule.max !== undefined) {
         return generateTestCode(fieldId, field, rule, 'Textfeld', ['a'.repeat(rule.min), 'a'.repeat(rule.max), 'a'.repeat(rule.min + 1), 'a'.repeat(rule.max - 1)], ['a'.repeat(rule.min - 1), 'a'.repeat(rule.max + 1)], additionalFill, comprehensive);
     }
+
     return '';
 }
 
@@ -99,12 +104,15 @@ function generateStringTests(fieldId: string, field: HTMLInputElement, rule: Fie
 function generateValidValuesTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
     if (!field || !rule.validValues) {
         console.error('Fehler: Ungültiges Feld oder Regel für gültige Werte.');
+
         return '';
     }
     if (rule.validValues.length > 0) {
         const dummyValues = ['dummy1', 'dummy2', 'dummy3'];
+
         return generateTestCode(fieldId, field, rule, 'Gültige Werte', rule.validValues, dummyValues, additionalFill, comprehensive);
     }
+
     return '';
 }
 
@@ -112,12 +120,15 @@ function generateValidValuesTests(fieldId: string, field: HTMLInputElement, rule
 function generateInvalidValuesTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
     if (!field || !rule.invalidValues) {
         console.error('Fehler: Ungültiges Feld oder Regel für ungültige Werte.');
+
         return '';
     }
     if (rule.invalidValues.length > 0) {
         const dummyValues = ['dummy1', 'dummy2', 'dummy3'];
+
         return generateTestCode(fieldId, field, rule, 'Ungültige Werte', rule.invalidValues, dummyValues, additionalFill, comprehensive);
     }
+
     return '';
 }
 
@@ -125,6 +136,7 @@ function generateInvalidValuesTests(fieldId: string, field: HTMLInputElement, ru
 function generateCheckboxTests(fieldId: string, field: HTMLInputElement, rule: FieldConstraints, additionalFill: string, comprehensive: boolean) {
     if (!field || rule.required === undefined) {
         console.error('Fehler: Ungültiges Feld oder fehlende Regel für Checkbox.');
+
         return '';
     }
     let testCode = '';
@@ -143,9 +155,10 @@ function generateCheckboxTests(fieldId: string, field: HTMLInputElement, rule: F
     testCode += `\n    await submitButton${globalIndex}.click();\n    await expect(page.locator('body')).toContainText('${rule.required ? rule.invalidMessage : rule.validMessage}');`;
 
     if (!comprehensive) {
-        testCode += `\n});\n`;
+        testCode += '\n});\n';
     }
     globalIndex++;
+
     return testCode;
 }
 
@@ -154,15 +167,18 @@ function generateValidValue(rule: FieldConstraints): string {
     switch (rule.type) {
         case 'number':
             if (rule.min !== undefined) return (rule.min + 1).toString();
+
             return '1';
         case 'string':
             if (rule.min !== undefined) return 'a'.repeat(rule.min);
+
             return 'valid';
         case 'validValues':
             if (rule.validValues && rule.validValues.length > 0) return rule.validValues[0];
+
             return 'valid';
         case 'invalidValues':
-            if (rule.invalidValues && rule.invalidValues.length > 0) return "dummy1";
+            if (rule.invalidValues && rule.invalidValues.length > 0) return 'dummy1';
         case 'checkbox':
             return 'true';
         default:
@@ -183,12 +199,13 @@ function generateAdditionalFill(currentField: HTMLInputElement): string {
             }
         }
     });
+
     return additionalFill;
 }
 
 // Generiert einen umfassenden Test für alle Felder
 export function generateComprehensiveTest() {
-    let testCode = `import { test, expect } from '@playwright/test';\n\n`;
+    let testCode = 'import { test, expect } from \'@playwright/test\';\n\n';
     testCode += `
     test('Gesamttest - ID: ${generateTestId()}', async ({ page }) => {
 `;
@@ -225,7 +242,7 @@ export function generateComprehensiveTest() {
 
     const outputBox = document.getElementById('test-output');
     if (outputBox) {
-        outputBox.textContent += testCode + '\n';
+        outputBox.textContent += `${testCode  }\n`;
     }
 }
 

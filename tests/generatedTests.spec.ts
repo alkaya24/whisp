@@ -15,7 +15,6 @@ test('Validiere Feld unbekannt für Zahlen zwischen 10 und 100', async ({ page }
     await expect(field).not.toHaveValue('invalid');
 });
 
-
 test('Validiere Feld textNutzer für Text zwischen 4 und 10 Zeichen', async ({ page }) => {
     await page.goto('https://userpage.fu-berlin.de/leinfelder/palaeo_de/multimediakurs/7_block/js_beispiele/formtest/formtest2.html');
 
@@ -39,7 +38,6 @@ test('Validiere Feld textNutzer für Text zwischen 4 und 10 Zeichen', async ({ p
     expect(isValid).toBe(true); // Erwarte, dass das Feld als ungültig markiert wird
 });
 
-
 test('Validiere Feld passphrase für gültige Werte', async ({ page }) => {
     await page.goto('file:///Users/alikaya/Downloads/Zugangscode-formular/index.html');
     const field = await page.locator('input[name="passphrase"]');
@@ -51,8 +49,6 @@ test('Validiere Feld passphrase für gültige Werte', async ({ page }) => {
     await expect(page.locator('body')).toContainText('Zugang gewährt!');
 
 });
-
-
 
 test('Validiere Feld passphrase für ungültige Werte', async ({ page }) => {
     await page.goto('file:///Users/alikaya/Downloads/Zugangscode-formular/index.html');
