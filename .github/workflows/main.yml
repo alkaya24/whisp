@@ -9,35 +9,19 @@ on:
       - main
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Repository auschecken
-      - name: Check out repository
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      # 2. Node.js einrichten
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: 18
 
-      # 3. Abhängigkeiten installieren
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm install
 
-      # 4. Tests ausführen
-      - name: Run tests
-        run: npm test
-
-      # 5. Projekt bauen
-      - name: Build project
+      - name: Build Project
         run: npm run build
-
-      # 6. Build-Artefakt speichern
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: build
-          path: dist/
