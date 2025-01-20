@@ -1,7 +1,7 @@
-import CopyWebpackPlugin from 'copy-webpack-plugin';
-import path from 'path';
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const path = require('path');
 
-export default {
+module.exports = {
     entry: {
         content: './src/content/index.ts',
         popup: './src/popup/popup.ts',
