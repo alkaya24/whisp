@@ -3,7 +3,7 @@ import path from 'path';
 
 test('Chrome Extension Test', async ({ page }) => {
 
-    const pathToExtension = path.join(__dirname, '../dist');
+    const pathToExtension = path.join(__dirname, '../../dist');
 
     const userDataDir = '/tmp/test-user-data-dir';
     const browser = await chromium.launchPersistentContext(userDataDir, {

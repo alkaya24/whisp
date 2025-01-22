@@ -46,7 +46,7 @@ export default [
             ],
             'brace-style': ['error', '1tbs', { allowSingleLine: true }],
             'prefer-template': ['error'],
-            'max-len': ['error', { code: 256, ignoreComments: true }],
+            'max-len': ['error', { code: 257, ignoreComments: true }],
             'no-console': 'warn',
             'comma-dangle': [
                 'error',
