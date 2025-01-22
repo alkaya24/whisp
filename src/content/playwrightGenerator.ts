@@ -36,7 +36,7 @@ export function generatePlaywrightTests(field: HTMLInputElement) {
     // Füge den generierten Testcode in die Test-Output-Box ein
     const outputBox = document.getElementById('test-output');
     if (outputBox) {
-        outputBox.textContent += `${testCode  }\n`;
+        outputBox.textContent += `${testCode}\n`;
     }
 }
 
@@ -56,12 +56,12 @@ function generateTestCode(fieldId: string, field: HTMLInputElement, rule: FieldC
 
     // Positive Tests
     values.forEach(value => {
-        testCode += `\n    // Positive test\n    await field${globalIndex}.fill('${value}');\n${additionalFill || ''}\n    await submitButton${globalIndex}.click();\n    await expect(page.locator('body')).toContainText('${rule.validMessage}');\n`;
+        testCode += `\n    // Positiver Test\n    await field${globalIndex}.fill('${value}');\n${additionalFill || ''}\n    await submitButton${globalIndex}.click();\n    await expect(page.locator('body')).toContainText('${rule.validMessage}');\n`;
     });
 
     // Negative Tests
     invalidValues.forEach(invalidValue => {
-        testCode += `\n    // Negative test\n    await field${globalIndex}.fill('${invalidValue}');\n${additionalFill || ''}\n    await submitButton${globalIndex}.click();\n    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');\n`;
+        testCode += `\n    // Negativer Test\n    await field${globalIndex}.fill('${invalidValue}');\n${additionalFill || ''}\n    await submitButton${globalIndex}.click();\n    await expect(page.locator('body')).toContainText('${rule.invalidMessage}');\n`;
     });
 
     if (!comprehensive) {
@@ -147,11 +147,11 @@ function generateCheckboxTests(fieldId: string, field: HTMLInputElement, rule: F
     testCode += `\n    await page.goto('${window.location.href}');\n    const checkbox${globalIndex} = await page.locator('input[id="${fieldId}"]');\n    const submitButton${globalIndex} = await page.locator('button[id="${rule.submitButtonId}"]');\n`;
 
     // Positiver Test
-    testCode += `\n    await checkbox${globalIndex}.check();\n${additionalFill || ''}`;
+    testCode += `\n    // Positiver Test\n    await checkbox${globalIndex}.check();\n${additionalFill || ''}`;
     testCode += `\n    await submitButton${globalIndex}.click();\n    await expect(page.locator('body')).toContainText('${rule.validMessage}');`;
 
     // Negativer Test
-    testCode += `\n    await checkbox${globalIndex}.uncheck();\n${additionalFill || ''}`;
+    testCode += `\n    // Negativer Test\n    await checkbox${globalIndex}.uncheck();\n${additionalFill || ''}`;
     testCode += `\n    await submitButton${globalIndex}.click();\n    await expect(page.locator('body')).toContainText('${rule.required ? rule.invalidMessage : rule.validMessage}');`;
 
     if (!comprehensive) {
@@ -242,7 +242,7 @@ export function generateComprehensiveTest() {
 
     const outputBox = document.getElementById('test-output');
     if (outputBox) {
-        outputBox.textContent += `${testCode  }\n`;
+        outputBox.textContent += `${testCode}\n`;
     }
 }
 
