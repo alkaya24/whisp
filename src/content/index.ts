@@ -88,6 +88,7 @@ function updateFieldCountOverlay(count: number) {
         overlay.style.borderRadius = '5px';
         overlay.style.zIndex = '10000';
         overlay.style.fontSize = '14px';
+        overlay.style.display = 'none';
         document.body.appendChild(overlay);
     }
 
@@ -102,11 +103,11 @@ function addTestOutputBox() {
     outputContainer.style.position = 'fixed';
     outputContainer.style.bottom = '10px';
     outputContainer.style.left = '10px';
-
+    outputContainer.style.display = 'none';
     const initialWidth = 300;
     const initialHeight = 250;
-    outputContainer.style.width = `${initialWidth  }px`;
-    outputContainer.style.height = `${initialHeight  }px`;
+    outputContainer.style.width = `${initialWidth}px`;
+    outputContainer.style.height = `${initialHeight}px`;
 
     // Basis-Styling für die Box
     Object.assign(outputContainer.style, {
@@ -132,6 +133,7 @@ function addTestOutputBox() {
         overflowY: 'auto',
         whiteSpace: 'pre-wrap',
         backgroundColor: '#f9f9f9',
+        display: 'none',
     });
     outputContainer.appendChild(outputBox);
 
@@ -170,7 +172,7 @@ function addTestOutputBox() {
         }
         navigator.clipboard.writeText(outputContent)
             .then(() => alert('Tests erfolgreich kopiert!'))
-            .catch(err => alert(`Fehler beim Kopieren: ${  err}`));
+            .catch(err => alert(`Fehler beim Kopieren: ${err}`));
     });
     buttonContainer.appendChild(copyButton);
 
@@ -225,8 +227,8 @@ function addTestOutputBox() {
             if (newWidth < initialWidth) newWidth = initialWidth;
             if (newHeight < initialHeight) newHeight = initialHeight;
 
-            outputContainer.style.width = `${newWidth  }px`;
-            outputContainer.style.height = `${newHeight  }px`;
+            outputContainer.style.width = `${newWidth}px`;
+            outputContainer.style.height = `${newHeight}px`;
         }
 
         function onMouseUp() {
@@ -258,6 +260,7 @@ function createFieldLabel(index: number, field: Element): HTMLSpanElement {
         border: '1px solid black',
         borderRadius: '3px',
         zIndex: '1000',
+        display: 'none',
     });
 
     // Positioniere das Label relativ zum Eingabefeld

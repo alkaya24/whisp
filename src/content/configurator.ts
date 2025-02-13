@@ -148,7 +148,12 @@ function setupConfiguratorEventListeners(field: HTMLInputElement) {
 // Erstellt einen Container für die Buttons im Konfigurator
 function createButtonContainer(): HTMLDivElement {
     const buttonContainer = document.createElement('div');
-    buttonContainer.style.textAlign = 'center';
+    // Verwende Flexbox, um die Buttons immer untereinander und zentriert anzuordnen
+    buttonContainer.style.display = 'flex';
+    buttonContainer.style.flexDirection = 'column';
+    buttonContainer.style.alignItems = 'center';
+    buttonContainer.style.gap = '10px'; // Abstand zwischen den Buttons
+
     const generateTestsButton = document.createElement('button');
     generateTestsButton.id = 'generate-tests';
     generateTestsButton.style.padding = '10px 20px';
@@ -157,6 +162,7 @@ function createButtonContainer(): HTMLDivElement {
     generateTestsButton.style.border = 'none';
     generateTestsButton.style.borderRadius = '5px';
     generateTestsButton.style.cursor = 'pointer';
+    generateTestsButton.style.marginTop = '10px';
     generateTestsButton.innerText = 'Tests für dieses Feld generieren';
 
     const cancelButton = document.createElement('button');
@@ -368,7 +374,7 @@ export function setupConfiguratorUI() {
                 <label>Fehlernachricht:</label><input type="text" id="invalid-message" placeholder="Fehlernachricht" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc;"/><br/>
             </div>
             <div style="text-align: center;">
-                <button id="save-config" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px;">Speichern</button>
+                <button id="save-config" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">Speichern</button>
             </div>
         </div>
         <div id="saved-tests-tab" style="display: none; margin-top: 20px;">

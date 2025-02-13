@@ -32,6 +32,7 @@ export function labelAndCountCheckboxes(checkboxes: HTMLInputElement[]) {
         label.style.border = '1px solid black';
         label.style.borderRadius = '3px';
         label.style.zIndex = '1000';
+        label.style.display = 'none';
 
         // Positioniere das Label in der Nähe der Checkbox
         const rect = checkbox.getBoundingClientRect();
@@ -64,6 +65,7 @@ function updateCheckboxCountOverlay(count: number) {
         overlay.style.borderRadius = '5px';
         overlay.style.zIndex = '10000';
         overlay.style.fontSize = '14px';
+        overlay.style.display = 'none';
         document.body.appendChild(overlay);
     }
 
